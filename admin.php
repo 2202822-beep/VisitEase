@@ -90,6 +90,84 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 }
 
 // ==========================================
+// --- BULK ACTIONS (ISAHANG APPROVE/REJECT) ---
+// ==========================================
+if (isset($_POST['bulk_action']) && !empty($_POST['booking_ids'])) {
+    $action = $_POST['bulk_action'];
+    $booking_ids = $_POST['booking_ids'];
+
+    foreach ($booking_ids as $id) {
+        $id = intval($id);
+        
+        $get_booking = $conn->query("SELECT * FROM bookings WHERE id = $id");
+        if ($get_booking->num_rows > 0) {
+            $booking = $get_booking->fetch_assoc();
+            
+            $visitor_email = $booking['email'];
+            $visitor_name = $booking['name'];
+            $booking_token = $booking['token'];
+            $visit_date = date('F d, Y', strtotime($booking['visit_date']));
+            $visit_time = $booking['visit_time'];
+            $guests = $booking['guests'];
+            
+            // Pag na-Approve nang isahan
+            if ($action == 'approve' && $booking['status'] == 'Pending') {
+                $conn->query("UPDATE bookings SET status = 'Confirmed' WHERE id = $id");
+                
+                $subject = 'VisitEase: Your Booking is CONFIRMED!';
+                $body = "
+                <div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;'>
+                    <div style='background-color: #10b981; color: #fff; padding: 20px; text-align: center;'>
+                        <h2 style='margin: 0;'>Booking Confirmed! ✅</h2>
+                    </div>
+                    <div style='padding: 20px; background-color: #fafaf9;'>
+                        <h3 style='color: #1a2035;'>Hello $visitor_name,</h3>
+                        <p>Magandang balita! Ang iyong booking sa VisitEase ay na-approve na ng aming admin.</p>
+                        <div style='background-color: #fff; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0;'>
+                            <p style='margin: 0 0 10px; font-size: 14px; color: #777;'>YOUR ENTRANCE TOKEN</p>
+                            <h1 style='margin: 0; color: #1a2035; letter-spacing: 2px;'>$booking_token</h1>
+                        </div>
+                        <p>Ipakita ang token na ito sa entrance sa araw ng iyong pagbisita.</p>
+                        <ul style='list-style: none; padding: 0;'>
+                            <li style='margin-bottom: 8px;'><b>Date:</b> $visit_date</li>
+                            <li style='margin-bottom: 8px;'><b>Time:</b> $visit_time</li>
+                            <li style='margin-bottom: 8px;'><b>Guests:</b> $guests Pax</li>
+                        </ul>
+                    </div>
+                </div>";
+                if (!empty($visitor_email)) {
+                    sendSystemEmail($visitor_email, $subject, $body);
+                }
+
+            // Pag na-Reject nang isahan
+            } elseif ($action == 'reject' && $booking['status'] == 'Pending') {
+                $conn->query("UPDATE bookings SET status = 'Rejected' WHERE id = $id");
+                $sched_id = $booking['schedule_id'];
+                $conn->query("UPDATE schedule_settings SET slots = slots + $guests WHERE id = '$sched_id'");
+                
+                $subject = 'VisitEase: Booking Update';
+                $body = "
+                <div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;'>
+                    <div style='background-color: #ef4444; color: #fff; padding: 20px; text-align: center;'>
+                        <h2 style='margin: 0;'>Booking Notice</h2>
+                    </div>
+                    <div style='padding: 20px; background-color: #fafaf9;'>
+                        <h3 style='color: #1a2035;'>Hello $visitor_name,</h3>
+                        <p>Ikinalulungkot naming ipaalam na hindi na-approve ang iyong booking (Token: <b>$booking_token</b>).</p>
+                        <p>Ito ay maaaring dahil sa invalid na GCash Reference number o full capacity na ang napiling schedule. Mangyaring mag-book na lamang muli gamit ang tamang detalye.</p>
+                    </div>
+                </div>";
+                if (!empty($visitor_email)) {
+                    sendSystemEmail($visitor_email, $subject, $body);
+                }
+            }
+        }
+    }
+    header("Location: admin.php");
+    exit();
+}
+
+// ==========================================
 // --- ANALYTICS (GLOBAL) ---
 // ==========================================
 $total_bookings = $conn->query("SELECT COUNT(*) as count FROM bookings")->fetch_assoc()['count'];
@@ -226,180 +304,127 @@ $activities_res = $conn->query("
         .sidebar { background: var(--sidebar-blue); min-height: 100vh; padding: 25px 15px; color: white; }
         .nav-link { color: rgba(255,255,255,0.7); padding: 12px 15px; border-radius: 8px; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 500; }
         .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
-        .stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height: 100%; transition: transform 0.2s; }
-        .stat-card:hover { transform: translateY(-2px); }
+        
+        /* ── IN-ENHANCE NA STAT CARDS AT ANIMATION ── */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .stat-card { 
+            background: white; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 12px; 
+            padding: 20px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            height: 100%; 
+            transition: all 0.3s ease; /* Pinasmooth ang transition */
+            opacity: 0; /* Para sa animation */
+            animation: fadeInUp 0.6s ease-out forwards; 
+        }
+        .stat-card:hover { 
+            transform: translateY(-5px); /* Mas umangat kapag na-hover */
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1); /* Dinagdagan ng shadow sa hover */
+        }
+        
+        /* Animation Delays para sunod-sunod silang lumabas */
+        .card-delay-1 { animation-delay: 0.1s; }
+        .card-delay-2 { animation-delay: 0.2s; }
+        .card-delay-3 { animation-delay: 0.3s; }
+        .card-delay-4 { animation-delay: 0.4s; }
+        .card-delay-5 { animation-delay: 0.5s; }
+        
         .icon-box { width: 45px; height: 45px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
 
         /* ── PENDING + ACTIVITY TWO-COLUMN WRAPPER ── */
-        .bottom-section { display: grid; grid-template-columns: 1fr 340px; gap: 24px; margin-top: 30px; align-items: start; }
+        .bottom-section { display: grid; grid-template-columns: 1fr 340px; gap: 24px; margin-top: 30px; align-items: start; animation: fadeInUp 0.6s ease-out 0.6s forwards; opacity: 0; }
 
         /* ── PENDING TABLE ── */
         .table-wrap { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .table thead th { background: #f1f5f9; color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 15px 20px; border: none; }
         .table td { padding: 15px 20px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
-        .btn-approve { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-        .btn-reject { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-        .btn-view { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .btn-approve { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; transition: all 0.2s; }
+        .btn-approve:hover { background-color: #166534; color: white; }
+        .btn-reject { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; transition: all 0.2s; }
+        .btn-reject:hover { background-color: #991b1b; color: white; }
+        .btn-view { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; transition: all 0.2s; }
+        .btn-view:hover { background-color: #e2e8f0; color: #1e293b; }
         .main-content { padding: 40px; }
 
+        /* Checkbox Styling para sa Bulk Actions */
+        .form-check-input { width: 1.2rem; height: 1.2rem; cursor: pointer; }
+        .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
+
         /* ── ACTIVITY LOG PANEL ── */
-        .activity-panel {
-            background: #fff;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .activity-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid #f1f5f9;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .activity-panel { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08); overflow: hidden; display: flex; flex-direction: column; }
+        .activity-header { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
         .activity-header h5 { margin: 0; font-weight: 700; font-size: .95rem; }
         .activity-header small { color: #94a3b8; font-size: .75rem; }
         .activity-list { padding: 8px 0; flex: 1; }
-        .activity-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 11px;
-            padding: 11px 18px;
-            border-bottom: 1px solid #f8fafc;
-            transition: background .15s;
-        }
+        .activity-item { display: flex; align-items: flex-start; gap: 11px; padding: 11px 18px; border-bottom: 1px solid #f8fafc; transition: background .15s; }
         .activity-item:last-child { border-bottom: none; }
         .activity-item:hover { background: #f8fafc; }
-        .act-icon {
-            width: 30px; height: 30px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: .7rem; flex-shrink: 0; margin-top: 2px;
-        }
+        .act-icon { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .7rem; flex-shrink: 0; margin-top: 2px; }
         .act-icon.booking  { background: #dcfce7; color: #16a34a; }
         .act-icon.slot     { background: #fef9c3; color: #ca8a04; }
         .act-icon.rejected { background: #fee2e2; color: #dc2626; }
         .act-icon.approved { background: #dbeafe; color: #2563eb; }
         .act-body { flex: 1; min-width: 0; }
-        .act-title {
-            font-size: .78rem; font-weight: 600; color: #1e293b;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            max-width: 240px;
-        }
+        .act-title { font-size: .78rem; font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
         .act-meta { font-size: .7rem; color: #94a3b8; margin-top: 2px; }
-        .act-badge {
-            font-size: .62rem; font-weight: 700; padding: 2px 7px;
-            border-radius: 20px; white-space: nowrap; flex-shrink: 0;
-            margin-top: 3px;
-        }
+        .act-badge { font-size: .62rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; margin-top: 3px; }
         .act-badge.new    { background: #fef9c3; color: #92400e; }
         .act-badge.slot   { background: #ede9fe; color: #6d28d9; }
         .act-badge.ok     { background: #dcfce7; color: #15803d; }
         .act-badge.rej    { background: #fee2e2; color: #991b1b; }
 
         /* pagination */
-        .act-pagination {
-            padding: 12px 18px;
-            border-top: 1px solid #f1f5f9;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: .75rem;
-            color: #64748b;
-        }
+        .act-pagination { padding: 12px 18px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; font-size: .75rem; color: #64748b; }
         .act-pagination .pg-info { font-size:.72rem; }
         .act-pagination .pg-btns { display:flex; gap:6px; }
-        .pg-btn {
-            padding: 4px 12px; border-radius: 6px; border: 1px solid #e2e8f0;
-            background: #fff; color: #475569; font-size: .72rem; font-weight: 600;
-            cursor: pointer; text-decoration: none; transition: all .15s;
-        }
+        .pg-btn { padding: 4px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: #fff; color: #475569; font-size: .72rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all .15s; }
         .pg-btn:hover:not(.disabled) { background: var(--primary); color: #fff; border-color: var(--primary); }
         .pg-btn.disabled { opacity: .4; pointer-events: none; }
         .pg-per { font-size: .72rem; color: #94a3b8; }
 
         /* receipt modal */
-        .receipt-image-container {
-            width: 100%; height: 250px; border-radius: 8px; overflow: hidden;
-            border: 1px solid #cbd5e1; background: #f1f5f9;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .receipt-image-container { width: 100%; height: 250px; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; background: #f1f5f9; display: flex; align-items: center; justify-content: center; }
         .receipt-image-container img { max-width: 100%; max-height: 100%; object-fit: contain; cursor: pointer; }
 
         /* ── NOTIFICATION BELL ── */
         .notif-wrapper { position: relative; }
-        .notif-btn {
-            width: 40px; height: 40px; border-radius: 10px;
-            background: #fff; border: 1px solid #e2e8f0;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: #475569; font-size: 1.1rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,.08);
-            position: relative; transition: all .2s;
-        }
+        .notif-btn { width: 40px; height: 40px; border-radius: 10px; background: #fff; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #475569; font-size: 1.1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); position: relative; transition: all .2s; }
         .notif-btn:hover { background: #f1f5f9; color: var(--primary); }
-        .notif-dot {
-            position: absolute; top: 6px; right: 6px;
-            width: 9px; height: 9px; background: #ef4444;
-            border-radius: 50%; border: 2px solid #fff;
-            animation: pulse-dot 1.8s ease-in-out infinite;
-        }
-        @keyframes pulse-dot {
-            0%,100% { transform: scale(1); opacity: 1; }
-            50%      { transform: scale(1.3); opacity: .75; }
-        }
-        .notif-dropdown {
-            display: none; position: absolute; top: calc(100% + 10px); right: 0;
-            width: 320px; background: #fff; border-radius: 12px;
-            border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,.12);
-            z-index: 9999; overflow: hidden;
-        }
+        .notif-dot { position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; background: #ef4444; border-radius: 50%; border: 2px solid #fff; animation: pulse-dot 1.8s ease-in-out infinite; }
+        @keyframes pulse-dot { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: .75; } }
+        .notif-dropdown { display: none; position: absolute; top: calc(100% + 10px); right: 0; width: 320px; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,.12); z-index: 9999; overflow: hidden; }
         .notif-dropdown.show { display: block; }
-        .notif-drop-header {
-            padding: 14px 18px; border-bottom: 1px solid #f1f5f9;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .notif-drop-header { padding: 14px 18px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
         .notif-drop-header h6 { margin: 0; font-weight: 700; font-size: .85rem; }
         .notif-drop-header .badge { font-size: .7rem; }
-        .notif-item {
-            display: flex; align-items: flex-start; gap: 12px;
-            padding: 12px 18px; border-bottom: 1px solid #f8fafc;
-            transition: background .15s; text-decoration: none; color: inherit;
-        }
+        .notif-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 18px; border-bottom: 1px solid #f8fafc; transition: background .15s; text-decoration: none; color: inherit; }
         .notif-item:hover { background: #f8fafc; }
         .notif-item:last-child { border-bottom: none; }
-        .notif-avatar {
-            width: 34px; height: 34px; border-radius: 50%;
-            background: #eef2ff; color: var(--primary);
-            display: flex; align-items: center; justify-content: center;
-            font-size: .75rem; flex-shrink: 0; font-weight: 700;
-        }
+        .notif-avatar { width: 34px; height: 34px; border-radius: 50%; background: #eef2ff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: .75rem; flex-shrink: 0; font-weight: 700; }
         .notif-item-body .notif-name { font-size: .8rem; font-weight: 600; color: #1e293b; }
         .notif-item-body .notif-sub  { font-size: .72rem; color: #94a3b8; margin-top: 2px; }
-        .notif-drop-footer {
-            padding: 10px 18px; text-align: center;
-            border-top: 1px solid #f1f5f9; font-size: .78rem;
-            color: var(--primary); font-weight: 600; cursor: pointer;
-        }
+        .notif-drop-footer { padding: 10px 18px; text-align: center; border-top: 1px solid #f1f5f9; font-size: .78rem; color: var(--primary); font-weight: 600; cursor: pointer; }
         .notif-drop-footer:hover { background: #f8fafc; }
         .notif-empty { padding: 24px; text-align: center; color: #94a3b8; font-size: .82rem; }
 
         /* ── CHART CARD ── */
-        .chart-card {
-            background: #fff; border-radius: 12px; border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0,0,0,.08); padding: 24px;
-            margin-bottom: 28px;
-        }
-        .chart-card-header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
-        }
+        .chart-card { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,.08); padding: 24px; margin-bottom: 28px; animation: fadeInUp 0.6s ease-out 0.5s forwards; opacity: 0; }
+        .chart-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .chart-card-header h5 { margin: 0; font-weight: 700; font-size: .95rem; }
         .chart-card-header small { color: #94a3b8; font-size: .75rem; }
         .chart-container { position: relative; height: 220px; }
 
-        @media(max-width:992px) {
-            .bottom-section { grid-template-columns: 1fr; }
-        }
+        @media(max-width:992px) { .bottom-section { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -419,7 +444,7 @@ $activities_res = $conn->query("
 
         <div class="col-md-10 main-content">
             
-            <div class="d-flex justify-content-between align-items-center mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-5" style="animation: fadeInUp 0.5s ease-out forwards;">
                 <div>
                     <h2 class="fw-bold m-0">Overview</h2>
                     <small class="text-muted">Global Analytics</small>
@@ -474,7 +499,7 @@ $activities_res = $conn->query("
 
             <div class="row g-4 mb-4">
                 <div class="col-md-4">
-                    <div class="stat-card" style="border-left:5px solid var(--primary);">
+                    <div class="stat-card card-delay-1" style="border-left:5px solid var(--primary);">
                         <div class="d-flex justify-content-between">
                             <div><p class="text-muted small mb-1 fw-bold text-uppercase">Total Capacity</p><h3 class="fw-bold text-dark"><?php echo number_format($range_total_slots); ?></h3></div>
                             <div class="icon-box bg-light text-primary"><i class="fas fa-layer-group"></i></div>
@@ -482,7 +507,7 @@ $activities_res = $conn->query("
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="stat-card" style="border-left:5px solid #0dcaf0;">
+                    <div class="stat-card card-delay-1" style="border-left:5px solid #0dcaf0;">
                         <div class="d-flex justify-content-between">
                             <div><p class="text-muted small mb-1 fw-bold text-uppercase">Total Booked</p><h3 class="fw-bold text-info"><?php echo number_format($range_total_booked); ?></h3></div>
                             <div class="icon-box bg-light text-info"><i class="fas fa-users"></i></div>
@@ -490,7 +515,7 @@ $activities_res = $conn->query("
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="stat-card" style="border-left:5px solid var(--success);">
+                    <div class="stat-card card-delay-1" style="border-left:5px solid var(--success);">
                         <div class="d-flex justify-content-between">
                             <div><p class="text-muted small mb-1 fw-bold text-uppercase">Available Slots</p><h3 class="fw-bold text-success"><?php echo number_format($range_available); ?></h3></div>
                             <div class="icon-box bg-light text-success"><i class="fas fa-ticket-alt"></i></div>
@@ -501,7 +526,7 @@ $activities_res = $conn->query("
 
             <div class="row g-4 mb-4">
                 <div class="col-md-3">
-                    <div class="stat-card">
+                    <div class="stat-card card-delay-2" style="border-left:5px solid var(--primary);">
                         <div class="d-flex justify-content-between">
                             <div><p class="text-muted small mb-1 fw-bold">BOOKINGS</p><h3 class="fw-bold"><?php echo $total_bookings; ?></h3></div>
                             <div class="icon-box" style="background:#eef2ff;color:var(--primary);"><i class="fas fa-book"></i></div>
@@ -509,7 +534,7 @@ $activities_res = $conn->query("
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-card">
+                    <div class="stat-card card-delay-2" style="border-left:5px solid var(--success);">
                         <div class="d-flex justify-content-between">
                             <div><p class="text-muted small mb-1 fw-bold">SERVED</p><h3 class="fw-bold text-success"><?php echo $total_served; ?></h3></div>
                             <div class="icon-box" style="background:#ecfdf5;color:var(--success);"><i class="fas fa-check-circle"></i></div>
@@ -517,7 +542,7 @@ $activities_res = $conn->query("
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-card bg-light border-0">
+                    <div class="stat-card bg-light card-delay-3" style="border-left:5px solid #212529;">
                         <div class="d-flex justify-content-between">
                             <div><p class="text-muted small mb-1 fw-bold">TODAY'S VISITS</p><h3 class="fw-bold text-dark"><?php echo $today_visits; ?></h3></div>
                             <div class="icon-box bg-white text-dark shadow-sm"><i class="fas fa-walking"></i></div>
@@ -525,7 +550,7 @@ $activities_res = $conn->query("
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-card bg-light border-0">
+                    <div class="stat-card bg-light card-delay-3" style="border-left:5px solid var(--primary);">
                         <div class="d-flex justify-content-between">
                             <div><p class="text-muted small mb-1 fw-bold">UPCOMING</p><h3 class="fw-bold text-primary"><?php echo $upcoming_visits; ?></h3></div>
                             <div class="icon-box bg-white text-primary shadow-sm"><i class="fas fa-calendar-alt"></i></div>
@@ -536,14 +561,14 @@ $activities_res = $conn->query("
 
             <div class="row g-4 mb-4">
                 <div class="col-md-4">
-                    <div class="stat-card bg-warning bg-opacity-10 border-warning">
+                    <div class="stat-card bg-warning bg-opacity-10 card-delay-4" style="border-left:5px solid #ffc107;">
                         <p class="text-warning small mb-1 fw-bold">PENDING REQUESTS</p>
-                        <h3 class="fw-bold text-warning"><?php echo $pending_count; ?></h3>
+                        <h3 class="fw-bold text-warning" id="pendingCardText"><?php echo $pending_count; ?></h3>
                         <span class="small fw-bold">Requires Attention</span>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="stat-card bg-success bg-opacity-10 border-success">
+                    <div class="stat-card bg-success bg-opacity-10 card-delay-4" style="border-left:5px solid var(--success);">
                         <p class="text-success small mb-1 fw-bold">SYSTEM STATUS</p>
                         <h3 class="fw-bold text-success">ONLINE</h3>
                         <span class="small fw-bold">All systems normal</span>
@@ -566,68 +591,86 @@ $activities_res = $conn->query("
 
             <div class="bottom-section">
 
-                <div class="table-wrap">
-                    <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-                        <h5 class="m-0 fw-bold">Pending Requests</h5>
-                        <span class="badge bg-primary">Showing All</span>
-                    </div>
-                    <table class="table mb-0">
-                        <thead>
-                            <tr>
-                                <th>Token</th>
-                                <th>Visitor</th>
-                                <th>Schedule</th>
-                                <th>Pax</th>
-                                <th>Status</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if ($result->num_rows > 0): ?>
-                                <?php while($row = $result->fetch_assoc()): 
-                                    $v_date = $row['visit_date'] ? date('M d, Y', strtotime($row['visit_date'])) : '<span class="text-danger">No Date Set</span>';
-                                    $v_time = $row['start_time'] ? date('h:i A', strtotime($row['start_time'])) : '';
-                                    $receipt_path = !empty($row['gcash_receipt']) ? 'uploads/receipts/' . $row['gcash_receipt'] : '';
-                                ?>
+                <form method="POST" action="admin.php" id="bulkForm">
+                    <div class="table-wrap">
+                        <div class="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-3">
+                                <h5 class="m-0 fw-bold">Pending Requests</h5>
+                                <div id="bulkActionsContainer" style="display: none; gap: 8px; animation: fadeInUp 0.2s;">
+                                    <button type="submit" name="bulk_action" value="approve" class="btn btn-sm btn-success fw-bold" onclick="return confirm('Sigurado ka bang i-approve ang lahat ng napili?');"><i class="fas fa-check-double me-1"></i> Approve Selected</button>
+                                    <button type="submit" name="bulk_action" value="reject" class="btn btn-sm btn-danger fw-bold" onclick="return confirm('Sigurado ka bang i-reject ang lahat ng napili?');"><i class="fas fa-times me-1"></i> Reject Selected</button>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="input-group input-group-sm" style="width: 250px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                                    <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search name or token..." style="box-shadow: none; outline: none;">
+                                </div>
+                                <span class="badge bg-primary" id="tableBadge">Showing All</span>
+                            </div>
+                        </div>
+                        <table class="table mb-0" id="pendingTable">
+                            <thead>
                                 <tr>
-                                    <td><span class="badge bg-light text-primary border px-2 py-2">#<?php echo $row['token']; ?></span></td>
-                                    <td>
-                                        <div class="fw-bold"><?php echo htmlspecialchars($row['name']); ?></div>
-                                        <div class="small text-muted"><?php echo htmlspecialchars($row['email']); ?></div>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold"><?php echo $v_date; ?></div>
-                                        <div class="small text-primary fw-bold"><?php echo $v_time; ?></div>
-                                    </td>
-                                    <td class="fw-bold fs-5"><?php echo $row['guests']; ?></td>
-                                    <td><span class="badge bg-warning text-dark fw-bold">PENDING</span></td>
-                                    <td class="text-end">
-                                        <button class="btn btn-view btn-sm me-1" onclick="viewDetails(
-                                            '<?php echo addslashes($row['name']); ?>', 
-                                            '<?php echo addslashes($row['gcash_name']); ?>', 
-                                            '<?php echo addslashes($row['gcash_ref']); ?>', 
-                                            '<?php echo addslashes($row['special_request'] ?? ''); ?>',
-                                            '<?php echo $v_date; ?>',
-                                            '<?php echo $v_time; ?>',
-                                            '<?php echo addslashes($receipt_path); ?>'
-                                        )">
-                                            <i class="fas fa-eye"></i> View
-                                        </button>
-                                        <a href="admin.php?action=approve&id=<?php echo $row['id']; ?>" class="btn btn-approve btn-sm me-1">
-                                            <i class="fas fa-check"></i>
-                                        </a>
-                                        <a href="admin.php?action=reject&id=<?php echo $row['id']; ?>" class="btn btn-reject btn-sm">
-                                            <i class="fas fa-times"></i>
-                                        </a>
-                                    </td>
+                                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAll" class="form-check-input shadow-sm"></th>
+                                    <th>Token</th>
+                                    <th>Visitor</th>
+                                    <th>Schedule</th>
+                                    <th>Pax</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
                                 </tr>
-                                <?php endwhile; ?>
-                            <?php else: ?>
-                                <tr><td colspan="6" class="text-center py-5 text-muted">Walang pending na request sa ngayon.</td></tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                <?php if ($result->num_rows > 0): ?>
+                                    <?php while($row = $result->fetch_assoc()): 
+                                        $v_date = $row['visit_date'] ? date('M d, Y', strtotime($row['visit_date'])) : '<span class="text-danger">No Date Set</span>';
+                                        $v_time = $row['start_time'] ? date('h:i A', strtotime($row['start_time'])) : '';
+                                        $receipt_path = !empty($row['gcash_receipt']) ? 'uploads/receipts/' . $row['gcash_receipt'] : '';
+                                    ?>
+                                    <tr>
+                                        <td style="text-align: center; vertical-align: middle;">
+                                            <input type="checkbox" name="booking_ids[]" value="<?php echo $row['id']; ?>" class="form-check-input row-chk shadow-sm">
+                                        </td>
+                                        <td><span class="badge bg-light text-primary border px-2 py-2">#<?php echo $row['token']; ?></span></td>
+                                        <td>
+                                            <div class="fw-bold"><?php echo htmlspecialchars($row['name']); ?></div>
+                                            <div class="small text-muted"><?php echo htmlspecialchars($row['email']); ?></div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold"><?php echo $v_date; ?></div>
+                                            <div class="small text-primary fw-bold"><?php echo $v_time; ?></div>
+                                        </td>
+                                        <td class="fw-bold fs-5"><?php echo $row['guests']; ?></td>
+                                        <td><span class="badge bg-warning text-dark fw-bold">PENDING</span></td>
+                                        <td class="text-end">
+                                            <button type="button" class="btn btn-view btn-sm me-1" onclick="viewDetails(
+                                                '<?php echo addslashes($row['name']); ?>', 
+                                                '<?php echo addslashes($row['gcash_name']); ?>', 
+                                                '<?php echo addslashes($row['gcash_ref']); ?>', 
+                                                '<?php echo addslashes($row['special_request'] ?? ''); ?>',
+                                                '<?php echo $v_date; ?>',
+                                                '<?php echo $v_time; ?>',
+                                                '<?php echo addslashes($receipt_path); ?>'
+                                            )">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                            <a href="admin.php?action=approve&id=<?php echo $row['id']; ?>" class="btn btn-approve btn-sm me-1">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                            <a href="admin.php?action=reject&id=<?php echo $row['id']; ?>" class="btn btn-reject btn-sm">
+                                                <i class="fas fa-times"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <?php endwhile; ?>
+                                <?php else: ?>
+                                    <tr><td colspan="7" class="text-center py-5 text-muted">Walang pending na request sa ngayon.</td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
 
                 <div class="activity-panel">
                     <div class="activity-header">
@@ -863,6 +906,7 @@ const bookingsChart = new Chart(ctx, {
         }
     }
 });
+
 function viewDetails(name, gcashName, gcashRef, request, visitDate, visitTime, receiptPath) {
     document.getElementById('modalGcashName').innerText = gcashName;
     document.getElementById('modalRef').innerText = gcashRef;
@@ -893,6 +937,117 @@ function viewDetails(name, gcashName, gcashRef, request, visitDate, visitTime, r
 
     new bootstrap.Modal(document.getElementById('detailsModal')).show();
 }
+
+// ── LIVE SEARCH LOGIC ──
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll('#pendingTable tbody tr');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        if (row.cells.length === 1) return;
+
+        let rowText = row.innerText.toLowerCase();
+        
+        if (rowText.includes(filter)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    let badge = document.getElementById('tableBadge');
+    if (filter.trim() === '') {
+        badge.innerText = 'Showing All';
+        badge.className = 'badge bg-primary';
+    } else {
+        badge.innerText = `Found: ${visibleCount}`;
+        badge.className = visibleCount > 0 ? 'badge bg-success' : 'badge bg-danger';
+    }
+});
+
+// ── BULK ACTIONS JS LOGIC ──
+document.getElementById('selectAll').addEventListener('change', function() {
+    let isChecked = this.checked;
+    document.querySelectorAll('.row-chk').forEach(chk => {
+        // I-check lang ang mga naka-display (hindi nakatago dahil sa Live Search)
+        if (chk.closest('tr').style.display !== 'none') {
+            chk.checked = isChecked;
+        }
+    });
+    toggleBulkButtons();
+});
+
+document.querySelectorAll('.row-chk').forEach(chk => {
+    chk.addEventListener('change', toggleBulkButtons);
+});
+
+function toggleBulkButtons() {
+    let checkedCount = document.querySelectorAll('.row-chk:checked').length;
+    let bulkContainer = document.getElementById('bulkActionsContainer');
+    
+    if (checkedCount > 0) {
+        bulkContainer.style.display = 'flex';
+    } else {
+        bulkContainer.style.display = 'none';
+        document.getElementById('selectAll').checked = false;
+    }
+}
+
+// ── BAGONG DAGDAG: AUTO-REFRESH (LIVE UPDATES) VIA AJAX ──
+function fetchUpdates() {
+    let searchInput = document.getElementById('searchInput');
+    let isSearching = searchInput && searchInput.value.trim() !== '';
+    let isChecking = document.querySelectorAll('.row-chk:checked').length > 0;
+    
+    // I-pause ang pag-refresh kung nag-se-search o may sine-select na visitor si Admin para hindi ma-distract
+    if (isSearching || isChecking) return;
+
+    fetch(window.location.href)
+        .then(response => response.text())
+        .then(html => {
+            let parser = new DOMParser();
+            let doc = parser.parseFromString(html, 'text/html');
+
+            // 1. I-update ang Pending Table Body nang tahimik
+            let newTableBody = doc.querySelector('#pendingTable tbody');
+            let currentTableBody = document.querySelector('#pendingTable tbody');
+            if (newTableBody && currentTableBody) {
+                currentTableBody.innerHTML = newTableBody.innerHTML;
+                
+                // Kailangang i-connect ulit yung event ng checkboxes dahil bago ang mga pumasok na elements
+                document.querySelectorAll('.row-chk').forEach(chk => {
+                    chk.addEventListener('change', toggleBulkButtons);
+                });
+            }
+
+            // 2. I-update ang Notification Bell at Dropdown
+            let newNotifWrapper = doc.querySelector('#notifWrapper');
+            let currentNotifWrapper = document.querySelector('#notifWrapper');
+            if (newNotifWrapper && currentNotifWrapper) {
+                // Tandaan kung nakabukas yung dropdown para hindi sumara kapag nag-refresh
+                let isDropdownOpen = document.getElementById('notifDropdown').classList.contains('show');
+                
+                currentNotifWrapper.innerHTML = newNotifWrapper.innerHTML;
+                
+                if (isDropdownOpen) {
+                    document.getElementById('notifDropdown').classList.add('show');
+                }
+            }
+
+            // 3. I-update ang numero sa "Pending Requests" na Card
+            let newPendingCard = doc.querySelector('#pendingCardText');
+            let currentPendingCard = document.querySelector('#pendingCardText');
+            if (newPendingCard && currentPendingCard) {
+                currentPendingCard.innerHTML = newPendingCard.innerHTML;
+            }
+        })
+        .catch(err => console.log('May error sa Auto-Refresh:', err));
+}
+
+// Paganahin ang auto-refresh kada 15 segundo (15000 milliseconds)
+setInterval(fetchUpdates, 15000);
 </script>
 </body>
 </html>
