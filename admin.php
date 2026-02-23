@@ -234,6 +234,10 @@ $activities_res  = $conn->query("
         /* ── LAYOUT ── */
         .main-content { padding: 40px; }
 
+        /* Checkbox Styling para sa Bulk Actions */
+        .form-check-input { width: 1.2rem; height: 1.2rem; cursor: pointer; }
+        .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
+
         /* ── TOP NAV ROW ── */
         .top-nav-row {
             display:flex; justify-content:space-between; align-items:center;
