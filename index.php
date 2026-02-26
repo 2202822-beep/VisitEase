@@ -234,6 +234,8 @@
                     <a href="index.php" class="nav-link-custom active">Home</a>
                     <a href="exhibits.php" class="nav-link-custom">Explore</a>
                     <a href="gallery.php" class="nav-link-custom">Gallery</a>
+                    <a href="about.php" class="nav-link-custom">About</a> 
+                    <a href="faqs.php" class="nav-link-custom">FAQs</a> 
                     <a href="check_status.php" class="nav-link-custom">Track Status</a>
                     <a href="book.php" class="btn-book ms-4"><i class="fas fa-bookmark me-2"></i>Book Visit</a>
                 </div>
@@ -254,7 +256,7 @@
                     <div class="slider-content">
                         <div class="slide-eyebrow animate__animated" id="slideLoc">Barangay Ilijan, Batangas City</div>
                         <h1 class="slide-title animate__animated" id="slideTitle">Pedro S. Tolentino Museum</h1>
-                        <p class="slide-desc animate__animated" id="slideDesc">Juan Luna's magnum opus. A harrowing glimpse into the bloodied floors of the Roman Colosseum.</p>
+                        <p class="slide-desc animate__animated" id="slideDesc">“Sulyap sa ating kasaysayan at sining. Tuklasin ang kwento sa likod ng bawat obra sa Pedro S. Tolentino Museum”.</p>
                         <a href="exhibits.php" class="btn-explore animate__animated" id="slideBtn"><i class="fas fa-arrow-right"></i> Explore Artifact</a>
                     </div>
                 </div>
@@ -430,8 +432,7 @@
             <div class="row align-items-center g-5">
                 <div class="col-lg-6 order-lg-2 reveal">
                     <div class="about-img-frame">
-                        <img src="https://images.unsplash.com/photo-1505566085526-2187cc833212?q=80&w=2070&auto=format&fit=crop" alt="Museum Interior" class="about-img">
-                    </div>
+                        
                 </div>
                 <div class="col-lg-6 order-lg-1 reveal reveal-delay-1">
                     <div class="section-label">About the Museum</div>
@@ -448,7 +449,7 @@
                         <li><i class="fas fa-circle"></i> Preserving the cultural heritage of Batangas City</li>
                     </ul>
                     <div class="row g-3 mt-1">
-                        <div class="col-4"><div class="stat-box"><div class="stat-number">5k+</div><div class="stat-label">Artifacts</div></div></div>
+                        <div class="col-4"><div class="stat-box"><div class="stat-number">500+</div><div class="stat-label">Artifacts</div></div></div>
                         <div class="col-4"><div class="stat-box"><div class="stat-number">12</div><div class="stat-label">Galleries</div></div></div>
                         <div class="col-4"><div class="stat-box"><div class="stat-number">98%</div><div class="stat-label">Satisfaction</div></div></div>
                     </div>
@@ -476,7 +477,7 @@
 
     <script>
         const artifacts = [
-            { id: 0, title: "Pedro S. Tolentino Museum", location: "Main Gallery Hub", desc: "Juan Luna's magnum opus. A harrowing glimpse into the bloodied floors of the Roman Colosseum, symbolizing the plight of the Filipino people under colonial rule.", img: "494813889_1218375400006712_3528886370220596685_n.jpg" },
+            { id: 0, title: "Pedro S. Tolentino Museum", location: "Main Gallery Hub", desc: "Juan Luna's magnum opus. A harrowing glimpse into the bloodied floors of the Roman Colosseum, symbolizing the plight of the Filipino people under colonial rule.", img: "pedro landing.jpg" },
             { id: 1, title: "Achievements and Certificate", location: "Archive Section", desc: "Recognizing his vital contributions to preserving local heritage. This collection features important manuscripts, historical records, and academic accolades compiled for future generations.", img: "494358990_1047988036664015_4979249687492318735_n.jpg" },
             { id: 2, title: "The Mayor's Attire", location: "VIP Quarters", desc: "A collection of formal wear and official suits worn by Pedro S. Tolentino during his tenure. These preserved garments represent the dignity of a dedicated public servant.", img: "494825054_1641213353259511_8978938757165686738_n.jpg" },
             { id: 3, title: "A Legacy of Public Service", location: "Heritage Vault", desc: "An intimate collection of personal memorabilia, accolades, and historical documents defining the life of Mayor Pedro S. Tolentino. A tribute to his enduring dedication.", img: "494359485_2155062051631886_4951905305416589935_n.jpg" }
@@ -552,6 +553,7 @@
             if (i.includes("location") || i.includes("where")) return "We are at <strong>Pedro S. Tolentino Museum, Barangay Ilijan, Batangas City</strong>.";
             if (i.includes("park")) return "Free parking is available on-site. Arrive early on weekends for availability.";
             if (i.includes("track")) return "Go to <strong>'Track Status'</strong> in the navigation menu to monitor your booking.";
+            if (i.includes("Who is your developer") || i.includes("system")) return "Ace Earl Jairus Natividad";
             return "I'm happy to help! You can ask about our hours, location, booking, parking, or admission.";
         }
     </script>
