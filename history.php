@@ -1,442 +1,368 @@
-<?php
-session_start();
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    header("Location: login.php");
-    exit();
-}
-include 'db.php';
-
-// ── DELETE ACTION ──
-if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
-    $id = intval($_GET['id']);
-    $conn->query("DELETE FROM bookings WHERE id = $id AND status != 'Pending'");
-    header("Location: history.php");
-    exit();
-}
-
-// ── BULK DELETE ──
-if (isset($_POST['bulk_delete']) && !empty($_POST['booking_ids'])) {
-    foreach ($_POST['booking_ids'] as $id) {
-        $id = intval($id);
-        $conn->query("DELETE FROM bookings WHERE id = $id AND status != 'Pending'");
-    }
-    header("Location: history.php");
-    exit();
-}
-
-// ── FETCH HISTORY ──
-$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
-$where  = "WHERE b.status != 'Pending'";
-if ($filter === 'confirmed') $where .= " AND b.status = 'Confirmed'";
-if ($filter === 'rejected')  $where .= " AND b.status = 'Rejected'";
-
-$result = $conn->query("
-    SELECT b.*, s.date as visit_date, s.start_time
-    FROM bookings b
-    LEFT JOIN schedule_settings s ON b.schedule_id = s.id
-    $where
-    ORDER BY b.id DESC
-");
-
-// ── COUNTS ──
-$total     = $conn->query("SELECT COUNT(*) as c FROM bookings WHERE status != 'Pending'")->fetch_assoc()['c'];
-$confirmed = $conn->query("SELECT COUNT(*) as c FROM bookings WHERE status = 'Confirmed'")->fetch_assoc()['c'];
-$rejected  = $conn->query("SELECT COUNT(*) as c FROM bookings WHERE status = 'Rejected'")->fetch_assoc()['c'];
-?>
+<?php include 'db.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>History | VisitEase Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>visitEase | About Our Museum</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Raleway:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
-            --primary:   #4361ee;
-            --success:   #10b981;
-            --danger:    #ef4444;
-            --sidebar:   #1e1b4b;
-            --bg:        #f8fafc;
-            --border:    #e2e8f0;
-            --muted:     #94a3b8;
+            /* Same Elegant Palette */
+            --bg-dark: #0f0f0f;
+            --bg-card: #1a1a1a;
+            --gold-accent: #c5a059;
+            --text-white: #e0e0e0;
         }
 
-        * { box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #1e293b; overflow-x: hidden; }
-
-        /* ── ANIMATIONS ── */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(18px); }
-            to   { opacity: 1; transform: translateY(0); }
+        body {
+            font-family: 'Raleway', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-white);
+            overflow-x: hidden;
         }
-        .anim { opacity: 0; animation: fadeInUp .55s ease-out forwards; }
-        .a1 { animation-delay: .05s; } .a2 { animation-delay: .15s; }
-        .a3 { animation-delay: .25s; } .a4 { animation-delay: .35s; }
 
-        /* ── SIDEBAR ── */
-        .sidebar {
-            background: linear-gradient(175deg, var(--sidebar) 0%, #312e81 100%);
-            min-height: 100vh; padding: 28px 16px; color: white;
-            position: sticky; top: 0; height: 100vh; overflow-y: auto;
+        /* --- Navbar --- */
+        .navbar {
+            background-color: rgba(15, 15, 15, 0.95); /* Solid Dark Background for this page */
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.2);
         }
-        .brand { font-size: 1.15rem; font-weight: 800; letter-spacing: 3px; color: #fff; text-align: center; margin-bottom: 40px; display: block; }
-        .brand span { color: #818cf8; }
-        .nav-link {
-            color: rgba(255,255,255,.65); padding: 11px 16px; border-radius: 10px;
-            margin-bottom: 4px; font-weight: 600; font-size: .85rem;
-            transition: all .25s; display: flex; align-items: center; gap: 10px; text-decoration: none;
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            color: var(--gold-accent) !important;
+            text-transform: uppercase;
         }
-        .nav-link i { width: 18px; text-align: center; }
-        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,.12); color: #fff; transform: translateX(4px); }
-
-        /* ── MAIN ── */
-        .main-content { padding: 38px 40px; }
-
-        /* ── STAT PILLS ── */
-        .stat-pill {
-            background: white; border: 1px solid var(--border); border-radius: 14px;
-            padding: 18px 22px; display: flex; align-items: center; gap: 14px;
-            box-shadow: 0 1px 4px rgba(0,0,0,.06); transition: all .3s;
+        .nav-link-custom {
+            color: #ccc;
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            margin-left: 25px;
+            text-decoration: none;
+            transition: color 0.3s;
+            cursor: pointer;
         }
-        .stat-pill:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.09); }
-        .stat-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; }
-        .stat-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
-        .stat-val   { font-size: 1.6rem; font-weight: 800; line-height: 1.1; }
-
-        /* ── FILTER TABS ── */
-        .filter-tabs { display: flex; gap: 8px; }
-        .ftab {
-            padding: 7px 18px; border-radius: 8px; font-size: .78rem; font-weight: 700;
-            cursor: pointer; border: 1.5px solid var(--border); background: white;
-            color: #475569; text-decoration: none; transition: all .2s;
+        .nav-link-custom:hover, .nav-link-custom.active {
+            color: var(--gold-accent);
         }
-        .ftab:hover { border-color: var(--primary); color: var(--primary); }
-        .ftab.active-all       { background: var(--primary); color: white; border-color: var(--primary); }
-        .ftab.active-confirmed { background: var(--success); color: white; border-color: var(--success); }
-        .ftab.active-rejected  { background: var(--danger);  color: white; border-color: var(--danger); }
 
-        /* ── TABLE CARD ── */
-        .table-card {
-            background: white; border-radius: 18px;
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 20px rgba(0,0,0,.06);
+        /* --- Header / Title Section --- */
+        .page-header {
+            padding: 100px 0 60px;
+            text-align: center;
+            background: linear-gradient(to bottom, #0f0f0f, #151515);
+        }
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            color: var(--gold-accent);
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: #888;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        /* --- About Section --- */
+        .about-section {
+            padding: 80px 0;
+        }
+        .about-img-wrapper {
+            position: relative;
+            padding: 20px;
+            border: 1px solid var(--gold-accent);
+        }
+        .about-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: grayscale(30%);
+            transition: filter 0.3s;
+        }
+        .about-img:hover {
+            filter: grayscale(0%);
+        }
+        
+        .about-content h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold-accent);
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+        }
+        .about-content p {
+            font-size: 1.05rem;
+            line-height: 1.9;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        /* --- Gallery Section --- */
+        .gallery-section {
+            padding: 80px 0;
+            background-color: var(--bg-card);
+        }
+        .gallery-item {
+            position: relative;
             overflow: hidden;
+            margin-bottom: 30px;
+            border: 1px solid #333;
+            transition: all 0.3s;
         }
-        .table-card-header {
-            padding: 20px 24px; border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+        .gallery-item img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
         }
-
-        /* ── TABLE ── */
-        .table { margin: 0; }
-        .table thead th {
-            background: #f8fafc; color: var(--muted);
-            font-size: .7rem; font-weight: 700;
-            text-transform: uppercase; letter-spacing: .8px;
-            padding: 14px 20px; border: none; white-space: nowrap;
+        .gallery-item:hover {
+            border-color: var(--gold-accent);
         }
-        .table tbody tr { transition: background .15s; }
-        .table tbody tr:hover { background: #fafbff; }
-        .table td { padding: 16px 20px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; font-size: .88rem; }
-        .table tbody tr:last-child td { border-bottom: none; }
-
-        /* ── BADGES ── */
-        .badge-confirmed { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 5px 12px; border-radius: 20px; font-size: .75rem; font-weight: 700; white-space: nowrap; }
-        .badge-rejected  { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 5px 12px; border-radius: 20px; font-size: .75rem; font-weight: 700; white-space: nowrap; }
-        .token-chip { font-family: monospace; background: #f1f5f9; padding: 4px 10px; border-radius: 7px; color: #334155; font-weight: 700; font-size: .85rem; border: 1px solid var(--border); }
-
-        /* ── ACTION BUTTONS ── */
-        .btn-del {
-            width: 34px; height: 34px; border-radius: 9px;
-            background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;
-            display: inline-flex; align-items: center; justify-content: center;
-            font-size: .8rem; cursor: pointer; transition: all .2s; text-decoration: none;
+        .gallery-item:hover img {
+            transform: scale(1.05);
         }
-        .btn-del:hover { background: #b91c1c; color: white; transform: scale(1.08); box-shadow: 0 4px 12px rgba(185,28,28,.3); }
-
-        /* ── SEARCH ── */
-        .search-wrap { position: relative; }
-        .search-wrap input { padding-left: 36px; border-radius: 9px; font-size: .82rem; border: 1.5px solid var(--border); outline: none; height: 36px; }
-        .search-wrap input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(67,97,238,.1); }
-        .search-wrap .si { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: .8rem; pointer-events: none; }
-
-        /* ── CHECKBOX ── */
-        .form-check-input { width: 1.1rem; height: 1.1rem; cursor: pointer; }
-        .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
-
-        /* ── BULK BAR ── */
-        #bulkBar {
-            display: none; align-items: center; gap: 10px;
-            background: #eff6ff; border: 1px solid #bfdbfe;
-            border-radius: 10px; padding: 10px 16px;
-            font-size: .82rem; font-weight: 600; color: #1d4ed8;
-            animation: fadeInUp .2s ease-out;
+        .gallery-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            background: rgba(0,0,0,0.8);
+            color: var(--gold-accent);
+            font-family: 'Playfair Display', serif;
+            text-align: center;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+        }
+        .gallery-item:hover .gallery-caption {
+            transform: translateY(0);
         }
 
-        /* ── EMPTY STATE ── */
-        .empty-state { padding: 70px 20px; text-align: center; color: var(--muted); }
-        .empty-state i { font-size: 2.8rem; margin-bottom: 14px; display: block; opacity: .4; }
-        .empty-state p { font-size: .88rem; }
-
-        /* ── DELETE CONFIRM MODAL ── */
-        .modal-content { border: none; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
-        .modal-header { border-bottom: 1px solid #f1f5f9; padding: 20px 24px; }
-        .modal-footer { border-top: 1px solid #f1f5f9; padding: 16px 24px; }
+        /* --- Modal Styles (Same as index) --- */
+        .modal-content {
+            background-color: var(--bg-card);
+            border: 2px solid var(--gold-accent);
+            border-radius: 0;
+        }
+        .modal-header { border-bottom: 1px solid rgba(197, 160, 89, 0.2); }
+        .modal-title, .form-label { font-family: 'Playfair Display', serif; color: var(--gold-accent); }
+        .btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
+        .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #444;
+            color: white;
+            border-radius: 0;
+        }
+        .form-control:focus {
+            background: rgba(197, 160, 89, 0.1);
+            border-color: var(--gold-accent);
+            color: white;
+            box-shadow: none;
+        }
+        .btn-gold {
+            background-color: var(--gold-accent);
+            color: #000;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            font-family: 'Playfair Display', serif;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-gold:hover { background-color: #e0b050; }
+        
+        /* SweetAlert Custom */
+        div:where(.swal2-container) div:where(.swal2-popup) {
+            border: 1px solid var(--gold-accent) !important;
+        }
     </style>
 </head>
 <body>
 
-<div class="container-fluid p-0">
-<div class="row g-0">
-
-    <!-- SIDEBAR -->
-    <div class="col-lg-2 sidebar d-none d-lg-block">
-        <span class="brand">VISIT<span>EASE</span></span>
-        <nav class="d-flex flex-column">
-            <a href="admin.php"           class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
-            <a href="manage_schedule.php" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a>
-            <a href="visitors.php"        class="nav-link"><i class="fas fa-users"></i> Visitors</a>
-            <a href="history.php"         class="nav-link active"><i class="fas fa-history"></i> History</a>
-            <a href="logout.php"          class="nav-link text-danger mt-5"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        </nav>
-    </div>
-
-    <!-- MAIN -->
-    <div class="col-lg-10 main-content">
-
-        <!-- HEADER -->
-        <div class="anim a1 d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
-            <div>
-                <h2 class="fw-bold mb-1" style="letter-spacing:-.3px">Booking History</h2>
-                <p class="text-secondary mb-0" style="font-size:.88rem">Archives of confirmed and rejected bookings</p>
-            </div>
-            <div class="filter-tabs">
-                <a href="history.php?filter=all"       class="ftab <?php echo $filter === 'all'       ? 'active-all'       : ''; ?>"><i class="fas fa-list me-1"></i>All</a>
-                <a href="history.php?filter=confirmed" class="ftab <?php echo $filter === 'confirmed' ? 'active-confirmed' : ''; ?>"><i class="fas fa-check-circle me-1"></i>Confirmed</a>
-                <a href="history.php?filter=rejected"  class="ftab <?php echo $filter === 'rejected'  ? 'active-rejected'  : ''; ?>"><i class="fas fa-times-circle me-1"></i>Rejected</a>
-            </div>
-        </div>
-
-        <!-- STAT PILLS -->
-        <div class="row g-3 mb-4">
-            <div class="col-sm-4 anim a2">
-                <div class="stat-pill">
-                    <div class="stat-icon" style="background:#eef2ff; color:var(--primary);"><i class="fas fa-archive"></i></div>
-                    <div>
-                        <div class="stat-label">Total Records</div>
-                        <div class="stat-val"><?php echo $total; ?></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4 anim a3">
-                <div class="stat-pill">
-                    <div class="stat-icon" style="background:#dcfce7; color:#15803d;"><i class="fas fa-check-circle"></i></div>
-                    <div>
-                        <div class="stat-label">Confirmed</div>
-                        <div class="stat-val" style="color:#15803d"><?php echo $confirmed; ?></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4 anim a4">
-                <div class="stat-pill">
-                    <div class="stat-icon" style="background:#fee2e2; color:#b91c1c;"><i class="fas fa-times-circle"></i></div>
-                    <div>
-                        <div class="stat-label">Rejected</div>
-                        <div class="stat-val" style="color:#b91c1c"><?php echo $rejected; ?></div>
-                    </div>
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.php">VISITEASE MUSEUM</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="fas fa-bars" style="color: var(--gold-accent);"></i>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <div class="navbar-nav align-items-center">
+                    <a href="home.php" class="nav-link-custom active">Home</a> 
+                    <a href="check_status.php" class="nav-link-custom">Track</a>
+                    <a href="#" class="nav-link-custom" data-bs-toggle="modal" data-bs-target="#bookingModal">Schedule</a>
                 </div>
             </div>
         </div>
+    </nav>
 
-        <!-- TABLE CARD -->
-        <div class="table-card anim a4">
-            <div class="table-card-header">
-                <div class="d-flex align-items-center gap-3 flex-wrap">
-                    <h5 class="m-0 fw-bold"><i class="fas fa-clock-rotate-left me-2 text-primary"></i>Records</h5>
+    <header class="page-header">
+        <div class="container">
+            <h1 class="section-title">About Our Museum</h1>
+            <p class="section-subtitle">
+                A sanctuary of history, art, and culture. Discover the stories that shaped our world.
+            </p>
+        </div>
+    </header>
 
-                    <!-- BULK DELETE BAR -->
-                    <form method="POST" action="history.php" id="bulkForm">
-                        <div id="bulkBar">
-                            <i class="fas fa-check-square"></i>
-                            <span id="bulkCount">0</span> selected
-                            <button type="submit" name="bulk_delete" value="1"
-                                class="btn btn-sm btn-danger fw-bold ms-2"
-                                onclick="return confirm('Permanently delete all selected records?')">
-                                <i class="fas fa-trash me-1"></i> Delete Selected
-                            </button>
-                            <button type="button" class="btn btn-sm btn-secondary" onclick="clearSelection()">Cancel</button>
+    <section class="about-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-5 mb-lg-0">
+                    <div class="about-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?auto=format&fit=crop&q=80" alt="Museum Interior" class="about-img">
+                    </div>
+                </div>
+                <div class="col-lg-6 ps-lg-5">
+                    <div class="about-content">
+                        <h3>Preserving the Legacy</h3>
+                        <p>
+                            Welcome to <strong>VisitEase Museum</strong>, a place where the past comes alive. Established in 1925, our institution has been dedicated to the preservation of rare artifacts, classical art, and historical documents that tell the story of humanity.
+                        </p>
+                        <p>
+                            Our collection spans over centuries, featuring masterpieces from the Renaissance, ancient tools from the Neolithic era, and modern installations that challenge the perception of time and space.
+                        </p>
+                        <p>
+                            We believe that history is not just about remembering dates, but about experiencing the emotions and triumphs of those who came before us.
+                        </p>
+                        <div class="mt-4">
+                            <span class="me-4"><i class="fas fa-landmark text-warning me-2"></i> 50+ Galleries</span>
+                            <span><i class="fas fa-users text-warning me-2"></i> Guided Tours</span>
                         </div>
-                        <!-- hidden inputs injected by JS -->
-                        <div id="hiddenIds"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="gallery-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 style="font-family: 'Playfair Display'; color: var(--gold-accent);">Our Collection</h2>
+                <div style="width: 60px; height: 3px; background: var(--gold-accent); margin: 10px auto;"></div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1572953109213-3be62398eb95?auto=format&fit=crop&q=80" alt="Sculpture">
+                        <div class="gallery-caption">The Marble Hall</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1544212976-5917408892d1?auto=format&fit=crop&q=80" alt="Painting">
+                        <div class="gallery-caption">Renaissance Art</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1518998053901-5348d3969105?auto=format&fit=crop&q=80" alt="Artifact">
+                        <div class="gallery-caption">Ancient Relics</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1582555172866-fc2c7974e4ce?auto=format&fit=crop&q=80" alt="Hallway">
+                        <div class="gallery-caption">The Grand Corridor</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1545239351-ef35f43d514b?auto=format&fit=crop&q=80" alt="Modern Art">
+                        <div class="gallery-caption">Modern Exhibitions</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1564399579883-451a5d44ec08?auto=format&fit=crop&q=80" alt="Library">
+                        <div class="gallery-caption">Historical Archives</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="background: #000; padding: 30px; text-align: center; border-top: 1px solid #333;">
+        <p style="color: #666; margin: 0;">&copy; 2023 visitEase Museum. All Rights Reserved.</p>
+    </footer>
+
+    <div class="modal fade" id="bookingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Schedule Your Entry</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="background: #1a1a1a;">
+                    <form action="process_booking.php" method="POST" id="bookingForm">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Date</label>
+                                <input type="date" name="date" class="form-control" min="<?= date('Y-m-d') ?>" required>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Time</label>
+                                <input type="time" name="time" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Guests</label>
+                            <input type="number" name="guests" class="form-control" value="1" min="1" max="10" required>
+                        </div>
+                        <button type="submit" class="btn btn-gold">Confirm Schedule</button>
                     </form>
                 </div>
-
-                <!-- SEARCH -->
-                <div class="search-wrap">
-                    <i class="fas fa-search si"></i>
-                    <input type="text" id="searchInput" placeholder="Search name, token, email…" style="width:240px;">
-                </div>
-            </div>
-
-            <div class="table-responsive">
-                <table class="table" id="historyTable">
-                    <thead>
-                        <tr>
-                            <th style="width:40px; text-align:center;">
-                                <input type="checkbox" id="selectAll" class="form-check-input">
-                            </th>
-                            <th>Token</th>
-                            <th>Visitor</th>
-                            <th>Visit Date</th>
-                            <th>Pax</th>
-                            <th>Status</th>
-                            <th class="text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if ($result && $result->num_rows > 0): ?>
-                            <?php while ($row = $result->fetch_assoc()):
-                                $v_date = $row['visit_date'] ? date('M d, Y', strtotime($row['visit_date'])) : '—';
-                                $v_time = $row['start_time'] ? date('h:i A', strtotime($row['start_time'])) : '';
-                            ?>
-                            <tr data-id="<?php echo $row['id']; ?>">
-                                <td style="text-align:center;">
-                                    <input type="checkbox" class="form-check-input row-chk" value="<?php echo $row['id']; ?>">
-                                </td>
-                                <td><span class="token-chip">#<?php echo htmlspecialchars($row['token']); ?></span></td>
-                                <td>
-                                    <div class="fw-semibold"><?php echo htmlspecialchars($row['name']); ?></div>
-                                    <div class="small text-muted"><?php echo htmlspecialchars($row['email']); ?></div>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold"><?php echo $v_date; ?></div>
-                                    <?php if ($v_time): ?>
-                                        <div class="small" style="color:var(--primary); font-weight:600;"><?php echo $v_time; ?></div>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="fw-bold fs-6"><?php echo $row['guests']; ?></td>
-                                <td>
-                                    <?php if ($row['status'] === 'Confirmed'): ?>
-                                        <span class="badge-confirmed"><i class="fas fa-check-circle me-1"></i>Confirmed</span>
-                                    <?php else: ?>
-                                        <span class="badge-rejected"><i class="fas fa-times-circle me-1"></i>Rejected</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="text-center">
-                                    <a href="#" class="btn-del"
-                                        onclick="confirmDelete(<?php echo $row['id']; ?>, '<?php echo htmlspecialchars($row['name']); ?>')"
-                                        title="Delete record">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="7">
-                                    <div class="empty-state">
-                                        <i class="fas fa-box-open"></i>
-                                        <p>No history records found<?php echo $filter !== 'all' ? ' for this filter' : ''; ?>.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-    </div><!-- end main-content -->
-</div>
-</div>
-
-<!-- DELETE CONFIRM MODAL -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="d-flex align-items-center gap-2">
-                    <div style="width:36px;height:36px;border-radius:10px;background:#fee2e2;display:flex;align-items:center;justify-content:center;color:#b91c1c;font-size:.95rem;">
-                        <i class="fas fa-trash"></i>
-                    </div>
-                    <h5 class="m-0 fw-bold">Delete Record</h5>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body px-4 py-3">
-                <p class="mb-1" style="font-size:.9rem;">Are you sure you want to permanently delete the record of</p>
-                <p class="fw-bold mb-0" id="deleteVisitorName" style="font-size:1rem;color:#1e293b;">—</p>
-                <p class="text-muted mt-2 mb-0" style="font-size:.8rem;"><i class="fas fa-warning me-1 text-warning"></i>This action cannot be undone.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
-                <a href="#" id="confirmDeleteBtn" class="btn btn-danger fw-bold">
-                    <i class="fas fa-trash me-1"></i>Delete
-                </a>
             </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-// ── SINGLE DELETE ──
-function confirmDelete(id, name) {
-    document.getElementById('deleteVisitorName').textContent = name;
-    document.getElementById('confirmDeleteBtn').href = `history.php?action=delete&id=${id}`;
-    new bootstrap.Modal(document.getElementById('deleteModal')).show();
-}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // SweetAlert functionality for consistency
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            let timerInterval;
+            Swal.fire({
+                title: 'Processing...',
+                html: 'Checking availability.',
+                timer: 1000,
+                timerProgressBar: true,
+                background: '#1a1a1a',
+                color: '#c5a059',
+                didOpen: () => { Swal.showLoading(); }
+            }).then(() => {
+                Swal.fire({
+                    title: 'Booking Confirmed!',
+                    text: 'We look forward to your visit.',
+                    icon: 'success',
+                    background: '#1a1a1a',
+                    color: '#e0e0e0',
+                    confirmButtonColor: '#c5a059'
+                }).then(() => { form.submit(); });
 
-// ── LIVE SEARCH ──
-document.getElementById('searchInput').addEventListener('keyup', function () {
-    const filter = this.value.toLowerCase();
-    document.querySelectorAll('#historyTable tbody tr').forEach(row => {
-        if (row.cells.length < 2) return;
-        row.style.display = row.innerText.toLowerCase().includes(filter) ? '' : 'none';
-    });
-});
-
-// ── CHECKBOX & BULK SELECT ──
-const selectAll = document.getElementById('selectAll');
-const bulkBar   = document.getElementById('bulkBar');
-const bulkCount = document.getElementById('bulkCount');
-const hiddenIds = document.getElementById('hiddenIds');
-
-selectAll.addEventListener('change', function () {
-    document.querySelectorAll('.row-chk').forEach(chk => {
-        if (chk.closest('tr').style.display !== 'none') chk.checked = this.checked;
-    });
-    updateBulkBar();
-});
-
-document.addEventListener('change', function (e) {
-    if (e.target.classList.contains('row-chk')) updateBulkBar();
-});
-
-function updateBulkBar() {
-    const checked = document.querySelectorAll('.row-chk:checked');
-    if (checked.length > 0) {
-        bulkBar.style.display = 'flex';
-        bulkCount.textContent = checked.length;
-        // Rebuild hidden inputs
-        hiddenIds.innerHTML = '';
-        checked.forEach(chk => {
-            const inp = document.createElement('input');
-            inp.type = 'hidden'; inp.name = 'booking_ids[]'; inp.value = chk.value;
-            hiddenIds.appendChild(inp);
+                
+            });
         });
-    } else {
-        bulkBar.style.display = 'none';
-        selectAll.checked = false;
-    }
-}
-
-function clearSelection() {
-    document.querySelectorAll('.row-chk, #selectAll').forEach(chk => chk.checked = false);
-    bulkBar.style.display = 'none';
-}
-</script>
+    </script>
 </body>
 </html>
+
