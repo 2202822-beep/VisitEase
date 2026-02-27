@@ -8,32 +8,16 @@ include 'db.php';
 require_once 'email_helper.php';
 
 // ── FETCH ADMIN PROFILE ──
-<<<<<<< HEAD
-// Try common session keys; fallback to 'Admin'
 $admin_username = $_SESSION['admin_username'] ?? $_SESSION['username'] ?? 'Admin';
-
-// Try to pull full info from an `admins` table; gracefully skip if table doesn't exist
-=======
-$admin_username = $_SESSION['admin_username'] ?? $_SESSION['username'] ?? 'Admin';
->>>>>>> ea99784 (Update museum files and added PHPMailer)
 $admin_name  = ucfirst($admin_username);
 $admin_email = 'admin@visitease.com';
 $admin_res   = @$conn->query("SELECT * FROM admins WHERE username = '" . $conn->real_escape_string($admin_username) . "' LIMIT 1");
 if ($admin_res && $admin_res->num_rows > 0) {
-<<<<<<< HEAD
-    $admin_row  = $admin_res->fetch_assoc();
-    $admin_name  = $admin_row['name'] ?? $admin_row['full_name'] ?? $admin_name;
-    $admin_email = $admin_row['email'] ?? $admin_email;
-}
-// Also check session overrides
-$admin_email = $_SESSION['admin_email'] ?? $admin_email;
-=======
     $admin_row   = $admin_res->fetch_assoc();
     $admin_name  = $admin_row['name'] ?? $admin_row['full_name'] ?? $admin_name;
     $admin_email = $admin_row['email'] ?? $admin_email;
 }
 $admin_email   = $_SESSION['admin_email'] ?? $admin_email;
->>>>>>> ea99784 (Update museum files and added PHPMailer)
 $admin_initial = strtoupper(substr($admin_name, 0, 1));
 
 // ── SINGLE ACTIONS ──
@@ -185,18 +169,13 @@ $chart_data_json   = json_encode($chart_data);
 $notif_res = $conn->query("SELECT b.name, b.token, s.date as visit_date, s.start_time, b.id FROM bookings b LEFT JOIN schedule_settings s ON b.schedule_id = s.id WHERE b.status = 'Pending' ORDER BY b.id DESC LIMIT 5");
 $notifs = [];
 while ($n = $notif_res->fetch_assoc()) $notifs[] = $n;
-$notif_count = count($notifs);
-// Collect IDs for JS "seen" tracking
+$notif_count   = count($notifs);
 $notif_ids_str = implode(',', array_column($notifs, 'id'));
 
 // ── PENDING BOOKINGS ──
 $result = $conn->query("SELECT b.*, s.date as visit_date, s.start_time, s.end_time FROM bookings b LEFT JOIN schedule_settings s ON b.schedule_id = s.id WHERE b.status = 'Pending' ORDER BY b.created_at DESC");
 
-<<<<<<< HEAD
 // ── ACTIVITY LOG — includes Cancelled status ──
-=======
-// ── ACTIVITY LOG ──
->>>>>>> ea99784 (Update museum files and added PHPMailer)
 $act_per_page    = 5;
 $act_page        = isset($_GET['act_page']) ? max(1, intval($_GET['act_page'])) : 1;
 $act_offset      = ($act_page - 1) * $act_per_page;
@@ -217,10 +196,7 @@ $activities_res  = $conn->query("
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-<<<<<<< HEAD
-=======
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
->>>>>>> ea99784 (Update museum files and added PHPMailer)
     <title>VisitEase Admin | Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -243,27 +219,16 @@ $activities_res  = $conn->query("
         .nav-link:hover, .nav-link.active { background: rgba(255,255,255,.1); color: #fff; }
 
         /* ── ANIMATIONS ── */
-<<<<<<< HEAD
-        @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
-        @keyframes pulse-dot { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.3);opacity:.75;} }
-
-        /* ── STAT CARDS ── */
-        .stat-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,.1); height:100%; transition:all .3s; opacity:0; animation:fadeInUp .6s ease-out forwards; }
-        .stat-card:hover { transform:translateY(-5px); box-shadow:0 8px 15px rgba(0,0,0,.1); }
-        .card-delay-1{animation-delay:.1s;} .card-delay-2{animation-delay:.2s;}
-        .card-delay-3{animation-delay:.3s;} .card-delay-4{animation-delay:.4s;}
-        .icon-box { width:45px; height:45px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
-=======
-        @keyframes fadeInUp  { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
+        @keyframes fadeInUp    { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
         @keyframes fadeInScale { from { opacity:0; transform:scale(.88); } to { opacity:1; transform:scale(1); } }
-        @keyframes pulse-dot { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.3);opacity:.75;} }
+        @keyframes pulse-dot   { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.3);opacity:.75;} }
 
         /* ── STAT CARDS ── */
         .stat-card {
             background:#fff; border:1px solid #e2e8f0; border-radius:12px;
             padding:20px; box-shadow:0 1px 3px rgba(0,0,0,.1); height:100%;
             transition:all .3s; opacity:0; animation:fadeInUp .6s ease-out forwards;
-            position: relative; /* needed for help icon absolute positioning */
+            position: relative;
         }
         .stat-card:hover { transform:translateY(-5px); box-shadow:0 8px 15px rgba(0,0,0,.1); }
         .card-delay-1{animation-delay:.1s;} .card-delay-2{animation-delay:.2s;}
@@ -272,68 +237,31 @@ $activities_res  = $conn->query("
 
         /* ── HELP ICON ── */
         .card-help-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #e2e8f0;
-            color: #64748b;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.62rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all .2s;
-            line-height: 1;
-            padding: 0;
-            z-index: 2;
+            position: absolute; top: 10px; right: 10px;
+            width: 20px; height: 20px; border-radius: 50%;
+            background: #e2e8f0; color: #64748b; border: none;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.62rem; font-weight: 700; cursor: pointer;
+            transition: all .2s; line-height: 1; padding: 0; z-index: 2;
         }
-        .card-help-btn:hover {
-            background: var(--primary);
-            color: #fff;
-            transform: scale(1.15);
-            box-shadow: 0 3px 8px rgba(67,97,238,.35);
-        }
+        .card-help-btn:hover { background: var(--primary); color: #fff; transform: scale(1.15); box-shadow: 0 3px 8px rgba(67,97,238,.35); }
         .card-help-btn i { font-size: 0.58rem; }
 
         /* ── HELP MODAL ── */
         #helpModal .modal-content { border: none; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.18); }
         #helpModal .modal-dialog  { animation: fadeInScale .22s ease-out; }
-        #helpModal .help-modal-icon {
-            width: 54px; height: 54px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem; margin: 0 auto 14px;
-        }
-        #helpModal .help-tag {
-            display: inline-block; font-size: .68rem; font-weight: 700;
-            letter-spacing: .06em; text-transform: uppercase;
-            padding: 3px 10px; border-radius: 20px; margin-bottom: 10px;
-        }
+        #helpModal .help-modal-icon { width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 14px; }
+        #helpModal .help-tag { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
         #helpModal .help-title { font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-bottom: 8px; }
         #helpModal .help-desc  { font-size: .85rem; color: #475569; line-height: 1.65; margin: 0; }
         #helpModal .help-bullets { list-style: none; padding: 0; margin: 12px 0 0; }
-        #helpModal .help-bullets li {
-            font-size: .82rem; color: #475569; padding: 6px 0;
-            border-bottom: 1px solid #f1f5f9; display: flex; align-items: flex-start; gap: 8px;
-        }
+        #helpModal .help-bullets li { font-size: .82rem; color: #475569; padding: 6px 0; border-bottom: 1px solid #f1f5f9; display: flex; align-items: flex-start; gap: 8px; }
         #helpModal .help-bullets li:last-child { border-bottom: none; }
         #helpModal .help-bullets li i { margin-top: 2px; flex-shrink: 0; }
->>>>>>> ea99784 (Update museum files and added PHPMailer)
 
         /* ── LAYOUT ── */
         .main-content { padding: 40px; }
 
-<<<<<<< HEAD
-        /* Checkbox Styling para sa Bulk Actions */
-        .form-check-input { width: 1.2rem; height: 1.2rem; cursor: pointer; }
-        .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
-
-=======
->>>>>>> ea99784 (Update museum files and added PHPMailer)
         /* ── TOP NAV ROW ── */
         .top-nav-row {
             display:flex; justify-content:space-between; align-items:center;
@@ -362,53 +290,9 @@ $activities_res  = $conn->query("
 
         /* ── PROFILE DROPDOWN ── */
         .profile-wrapper { position:relative; z-index:9999; }
-<<<<<<< HEAD
-        .profile-btn {
-            display:flex; align-items:center; gap:9px;
-            background:#fff; border:1px solid #e2e8f0; border-radius:12px;
-            padding:6px 13px 6px 7px; cursor:pointer;
-            box-shadow:0 1px 3px rgba(0,0,0,.08); transition:all .2s;
-        }
-        .profile-btn:hover { background:#f1f5f9; box-shadow:0 3px 10px rgba(0,0,0,.1); }
-        .profile-avatar {
-            width:32px; height:32px; border-radius:50%;
-            background:linear-gradient(135deg,#4361ee,#7c3aed);
-            color:#fff; display:flex; align-items:center; justify-content:center;
-            font-size:.8rem; font-weight:800; flex-shrink:0; letter-spacing:0;
-        }
-        .profile-info .p-name  { font-size:.8rem; font-weight:700; color:#1e293b; line-height:1.15; }
-        .profile-info .p-role  { font-size:.67rem; color:#94a3b8; font-weight:500; }
-        .p-chevron { color:#94a3b8; font-size:.62rem; margin-left:2px; transition:transform .2s; }
-        .profile-wrapper.open .p-chevron { transform:rotate(180deg); }
-
-        .profile-dropdown {
-            display:none; position:absolute; top:calc(100% + 10px); right:0;
-            width:262px; background:#fff; border-radius:14px;
-            border:1px solid #e2e8f0; box-shadow:0 16px 40px rgba(0,0,0,.15);
-            z-index:99999; overflow:hidden;
-        }
-        .profile-dropdown.show { display:block; animation:fadeInUp .18s ease-out; }
-
-        /* gradient header inside dropdown */
-        .pd-header {
-            padding:20px 18px 16px;
-            background:linear-gradient(135deg,#4361ee 0%,#7c3aed 100%);
-            text-align:center;
-        }
-        .pd-avatar {
-            width:54px; height:54px; border-radius:50%;
-            background:rgba(255,255,255,.22); border:2px solid rgba(255,255,255,.45);
-            color:#fff; display:flex; align-items:center; justify-content:center;
-            font-size:1.35rem; font-weight:800; margin:0 auto 10px;
-        }
-        .pd-name   { font-size:.95rem; font-weight:700; color:#fff; margin:0; }
-        .pd-email  { font-size:.73rem; color:rgba(255,255,255,.78); margin:4px 0 0; word-break:break-all; }
-        .pd-role   { display:inline-block; margin-top:9px; background:rgba(255,255,255,.2); color:#fff; font-size:.64rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:3px 11px; border-radius:20px; }
-
-=======
         .profile-btn { display:flex; align-items:center; gap:9px; background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:6px 13px 6px 7px; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.08); transition:all .2s; }
         .profile-btn:hover { background:#f1f5f9; box-shadow:0 3px 10px rgba(0,0,0,.1); }
-        .profile-avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#4361ee,#7c3aed); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:800; flex-shrink:0; }
+        .profile-avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#4361ee,#7c3aed); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:800; flex-shrink:0; letter-spacing:0; }
         .profile-info .p-name { font-size:.8rem; font-weight:700; color:#1e293b; line-height:1.15; }
         .profile-info .p-role { font-size:.67rem; color:#94a3b8; font-weight:500; }
         .p-chevron { color:#94a3b8; font-size:.62rem; margin-left:2px; transition:transform .2s; }
@@ -420,7 +304,6 @@ $activities_res  = $conn->query("
         .pd-name  { font-size:.95rem; font-weight:700; color:#fff; margin:0; }
         .pd-email { font-size:.73rem; color:rgba(255,255,255,.78); margin:4px 0 0; word-break:break-all; }
         .pd-role  { display:inline-block; margin-top:9px; background:rgba(255,255,255,.2); color:#fff; font-size:.64rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:3px 11px; border-radius:20px; }
->>>>>>> ea99784 (Update museum files and added PHPMailer)
         .pd-body  { padding:6px 0; }
         .pd-item  { display:flex; align-items:center; gap:11px; padding:11px 18px; font-size:.82rem; font-weight:600; color:#475569; text-decoration:none; transition:background .15s; background:none; border:none; width:100%; cursor:pointer; }
         .pd-item:hover { background:#f8fafc; color:#1e293b; }
@@ -430,39 +313,22 @@ $activities_res  = $conn->query("
         .pd-divider { height:1px; background:#f1f5f9; margin:4px 0; }
 
         /* ── CHART CARD ── */
-<<<<<<< HEAD
-        .chart-card { background:#fff; border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,.08); padding:24px; margin-bottom:28px; animation:fadeInUp .6s ease-out .5s forwards; opacity:0; }
-=======
         .chart-card { background:#fff; border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,.08); padding:24px; margin-bottom:28px; animation:fadeInUp .6s ease-out .5s forwards; opacity:0; position:relative; }
->>>>>>> ea99784 (Update museum files and added PHPMailer)
         .chart-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
         .chart-card-header h5 { margin:0; font-weight:700; font-size:.95rem; }
         .chart-container { position:relative; height:220px; }
 
-<<<<<<< HEAD
         /* ── BOTTOM SECTION ── */
-        .bottom-section { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:30px; align-items:start; animation:fadeInUp .6s ease-out .6s forwards; opacity:0; }
-        @media(max-width:992px) { .bottom-section { grid-template-columns:1fr; } }
-
-        /* ── PENDING TABLE ── */
-        .table-wrap { background:#fff; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden; box-shadow:0 4px 6px -1px rgba(0,0,0,.1); height:100%; }
-=======
-        /* ── BOTTOM SECTION — equal height ── */
         .bottom-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-top: 30px;
-            align-items: stretch; /* KEY: makes both panels equal height */
-            animation: fadeInUp .6s ease-out .6s forwards;
-            opacity: 0;
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 24px; margin-top: 30px; align-items: stretch;
+            animation: fadeInUp .6s ease-out .6s forwards; opacity: 0;
         }
         @media(max-width:992px) { .bottom-section { grid-template-columns:1fr; } }
 
         /* ── PENDING TABLE ── */
         .table-wrap { background:#fff; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden; box-shadow:0 4px 6px -1px rgba(0,0,0,.1); height:100%; display:flex; flex-direction:column; }
         .table-wrap > div:last-child { flex:1; overflow:auto; }
->>>>>>> ea99784 (Update museum files and added PHPMailer)
         .table thead th { background:#f1f5f9; color:#64748b; font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; padding:15px 20px; border:none; }
         .table td { padding:15px 20px; vertical-align:middle; border-bottom:1px solid #f1f5f9; }
         .btn-approve { background:#dcfce7; color:#166534; border:1px solid #bbf7d0; transition:all .2s; }
@@ -476,15 +342,9 @@ $activities_res  = $conn->query("
 
         /* ── ACTIVITY LOG ── */
         .activity-panel { background:#fff; border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 4px 6px -1px rgba(0,0,0,.08); overflow:hidden; display:flex; flex-direction:column; height:100%; }
-<<<<<<< HEAD
-        .activity-header { padding:16px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; }
-        .activity-header h5 { margin:0; font-weight:700; font-size:.95rem; }
-        .activity-list { padding:8px 0; flex:1; }
-=======
         .activity-header { padding:16px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
         .activity-header h5 { margin:0; font-weight:700; font-size:.95rem; }
         .activity-list { padding:8px 0; flex:1; overflow-y:auto; }
->>>>>>> ea99784 (Update museum files and added PHPMailer)
         .activity-item { display:flex; align-items:flex-start; gap:11px; padding:11px 18px; border-bottom:1px solid #f8fafc; transition:background .15s; }
         .activity-item:last-child { border-bottom:none; }
         .activity-item:hover { background:#f8fafc; }
@@ -493,13 +353,8 @@ $activities_res  = $conn->query("
         .act-icon.slot      { background:#fef9c3; color:#ca8a04; }
         .act-icon.rejected  { background:#fee2e2; color:#dc2626; }
         .act-icon.approved  { background:#dbeafe; color:#2563eb; }
-<<<<<<< HEAD
-        .act-icon.cancelled { background:#f3e8ff; color:#7c3aed; }  /* purple for cancelled */
-        .act-body { flex:1; min-width:0; }
-=======
         .act-icon.cancelled { background:#f3e8ff; color:#7c3aed; }
         .act-body  { flex:1; min-width:0; }
->>>>>>> ea99784 (Update museum files and added PHPMailer)
         .act-title { font-size:.78rem; font-weight:600; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .act-meta  { font-size:.7rem; color:#94a3b8; margin-top:2px; }
         .act-badge { font-size:.62rem; font-weight:700; padding:2px 7px; border-radius:20px; white-space:nowrap; flex-shrink:0; margin-top:3px; }
@@ -509,26 +364,15 @@ $activities_res  = $conn->query("
         .act-badge.rej       { background:#fee2e2; color:#991b1b; }
         .act-badge.cancelled { background:#f3e8ff; color:#6d28d9; }
 
-<<<<<<< HEAD
-        /* pagination */
-        .act-pagination { padding:12px 18px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; font-size:.75rem; color:#64748b; }
-        .pg-btns { display:flex; gap:6px; }
-        .pg-btn { padding:4px 12px; border-radius:6px; border:1px solid #e2e8f0; background:#fff; color:#475569; font-size:.72rem; font-weight:600; text-decoration:none; transition:all .15s; }
-        .pg-btn:hover:not(.disabled) { background:var(--primary); color:#fff; border-color:var(--primary); }
-        .pg-btn.disabled { opacity:.4; pointer-events:none; }
-=======
         /* ── ACTIVITY PAGINATION ── */
         .act-pagination { padding:12px 18px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; font-size:.75rem; color:#64748b; flex-shrink:0; }
         .pg-btns { display:flex; gap:6px; }
         .pg-btn { padding:4px 12px; border-radius:6px; border:1px solid #e2e8f0; background:#fff; color:#475569; font-size:.72rem; font-weight:600; cursor:pointer; transition:all .15s; }
         .pg-btn:hover:not(:disabled) { background:var(--primary); color:#fff; border-color:var(--primary); }
         .pg-btn:disabled { opacity:.4; cursor:default; }
-
-        /* Activity loading state */
         .activity-list.loading { opacity:.45; pointer-events:none; transition:opacity .2s; }
->>>>>>> ea99784 (Update museum files and added PHPMailer)
 
-        /* receipt modal */
+        /* ── RECEIPT MODAL ── */
         .receipt-image-container { width:100%; height:250px; border-radius:8px; overflow:hidden; border:1px solid #cbd5e1; background:#f1f5f9; display:flex; align-items:center; justify-content:center; }
         .receipt-image-container img { max-width:100%; max-height:100%; object-fit:contain; cursor:pointer; }
     </style>
@@ -557,28 +401,17 @@ $activities_res  = $conn->query("
         <div class="top-nav-row">
             <div>
                 <h2 class="fw-bold m-0">Overview</h2>
-<<<<<<< HEAD
                 <small class="text-muted">Global Analytics</small>
-=======
->>>>>>> ea99784 (Update museum files and added PHPMailer)
             </div>
 
             <div class="d-flex align-items-center gap-3">
 
-                <!-- ── NOTIFICATION BELL ── -->
-<<<<<<< HEAD
-                <div class="notif-wrapper" id="notifWrapper">
-                    <div class="notif-btn" onclick="toggleNotif(event)">
-                        <i class="fas fa-bell"></i>
-                        <?php if ($notif_count > 0): ?>
-                            <span class="notif-dot"></span>
-=======
+                <!-- NOTIFICATION BELL -->
                 <div class="notif-wrapper" id="notifWrapper" data-pending-ids="<?php echo htmlspecialchars($notif_ids_str); ?>">
                     <div class="notif-btn" id="notifBtnEl" onclick="toggleNotif(event)">
                         <i class="fas fa-bell"></i>
                         <?php if ($notif_count > 0): ?>
                             <span class="notif-dot" id="notifDot"></span>
->>>>>>> ea99784 (Update museum files and added PHPMailer)
                         <?php endif; ?>
                     </div>
                     <div class="notif-dropdown" id="notifDropdown">
@@ -593,11 +426,7 @@ $activities_res  = $conn->query("
                         <?php if ($notif_count > 0): ?>
                             <?php foreach ($notifs as $n):
                                 $n_date   = $n['visit_date'] ? date('M d, Y', strtotime($n['visit_date'])) : 'No date';
-<<<<<<< HEAD
-                                $n_time   = $n['start_time'] ? date('h:i A',  strtotime($n['start_time'])) : '';
-=======
                                 $n_time   = $n['start_time'] ? date('h:i A', strtotime($n['start_time'])) : '';
->>>>>>> ea99784 (Update museum files and added PHPMailer)
                                 $initials = strtoupper(substr($n['name'], 0, 1));
                             ?>
                             <div class="notif-item">
@@ -618,7 +447,7 @@ $activities_res  = $conn->query("
                     </div>
                 </div>
 
-                <!-- ── PROFILE DROPDOWN ── -->
+                <!-- PROFILE DROPDOWN -->
                 <div class="profile-wrapper" id="profileWrapper">
                     <div class="profile-btn" onclick="toggleProfile(event)">
                         <div class="profile-avatar"><?php echo $admin_initial; ?></div>
@@ -628,43 +457,19 @@ $activities_res  = $conn->query("
                         </div>
                         <i class="fas fa-chevron-down p-chevron"></i>
                     </div>
-<<<<<<< HEAD
-
                     <div class="profile-dropdown" id="profileDropdown">
-                        <!-- Gradient header with avatar, name, email, role -->
-=======
-                    <div class="profile-dropdown" id="profileDropdown">
->>>>>>> ea99784 (Update museum files and added PHPMailer)
                         <div class="pd-header">
                             <div class="pd-avatar"><?php echo $admin_initial; ?></div>
                             <div class="pd-name"><?php echo htmlspecialchars($admin_name); ?></div>
                             <div class="pd-email"><?php echo htmlspecialchars($admin_email); ?></div>
                             <span class="pd-role">Administrator</span>
                         </div>
-<<<<<<< HEAD
-                        <!-- Quick links -->
-                        <div class="pd-body">
-                            <a href="manage_schedule.php" class="pd-item">
-                                <i class="fas fa-calendar-alt" style="color:var(--primary);"></i> Manage Schedule
-                            </a>
-                            <a href="visitors.php" class="pd-item">
-                                <i class="fas fa-users" style="color:#0891b2;"></i> Visitors
-                            </a>
-                            <a href="history.php" class="pd-item">
-                                <i class="fas fa-history" style="color:#7c3aed;"></i> Booking History
-                            </a>
-                            <div class="pd-divider"></div>
-                            <a href="logout.php" class="pd-item danger">
-                                <i class="fas fa-sign-out-alt"></i> Sign Out
-                            </a>
-=======
                         <div class="pd-body">
                             <a href="manage_schedule.php" class="pd-item"><i class="fas fa-calendar-alt" style="color:var(--primary);"></i> Manage Schedule</a>
                             <a href="visitors.php"        class="pd-item"><i class="fas fa-users" style="color:#0891b2;"></i> Visitors</a>
                             <a href="history.php"         class="pd-item"><i class="fas fa-history" style="color:#7c3aed;"></i> Booking History</a>
                             <div class="pd-divider"></div>
                             <a href="logout.php" class="pd-item danger"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
->>>>>>> ea99784 (Update museum files and added PHPMailer)
                         </div>
                     </div>
                 </div>
@@ -676,223 +481,100 @@ $activities_res  = $conn->query("
             </div>
         </div><!-- end top-nav-row -->
 
-<<<<<<< HEAD
         <!-- STAT CARDS ROW 1 -->
         <div class="row g-4 mb-4">
             <div class="col-md-4">
                 <div class="stat-card card-delay-1" style="border-left:5px solid var(--primary);">
-                    <div class="d-flex justify-content-between">
-                        <div><p class="text-muted small mb-1 fw-bold text-uppercase">Total Capacity</p><h3 class="fw-bold text-dark"><?php echo number_format($range_total_slots); ?></h3></div>
-=======
-        <!-- ════════════════════════════════════════
-             STAT CARDS ROW 1 — Capacity / Booked / Available
-             ════════════════════════════════════════ -->
-        <div class="row g-4 mb-4">
-
-            <!-- Total Capacity -->
-            <div class="col-md-4">
-                <div class="stat-card card-delay-1" style="border-left:5px solid var(--primary);">
                     <button class="card-help-btn" onclick="showHelp('total-capacity')"><i class="fas fa-question"></i></button>
                     <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted small mb-1 fw-bold text-uppercase">Total Capacity</p>
-                            <h3 class="fw-bold text-dark"><?php echo number_format($range_total_slots); ?></h3>
-                        </div>
->>>>>>> ea99784 (Update museum files and added PHPMailer)
+                        <div><p class="text-muted small mb-1 fw-bold text-uppercase">Total Capacity</p><h3 class="fw-bold text-dark"><?php echo number_format($range_total_slots); ?></h3></div>
                         <div class="icon-box bg-light text-primary"><i class="fas fa-layer-group"></i></div>
                     </div>
                 </div>
             </div>
-<<<<<<< HEAD
-            <div class="col-md-4">
-                <div class="stat-card card-delay-1" style="border-left:5px solid #0dcaf0;">
-                    <div class="d-flex justify-content-between">
-                        <div><p class="text-muted small mb-1 fw-bold text-uppercase">Total Booked</p><h3 class="fw-bold text-info"><?php echo number_format($range_total_booked); ?></h3></div>
-=======
-
-            <!-- Total Booked -->
             <div class="col-md-4">
                 <div class="stat-card card-delay-1" style="border-left:5px solid #0dcaf0;">
                     <button class="card-help-btn" onclick="showHelp('total-booked')"><i class="fas fa-question"></i></button>
                     <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted small mb-1 fw-bold text-uppercase">Total Booked</p>
-                            <h3 class="fw-bold text-info"><?php echo number_format($range_total_booked); ?></h3>
-                        </div>
->>>>>>> ea99784 (Update museum files and added PHPMailer)
+                        <div><p class="text-muted small mb-1 fw-bold text-uppercase">Total Booked</p><h3 class="fw-bold text-info"><?php echo number_format($range_total_booked); ?></h3></div>
                         <div class="icon-box bg-light text-info"><i class="fas fa-users"></i></div>
                     </div>
                 </div>
             </div>
-<<<<<<< HEAD
-            <div class="col-md-4">
-                <div class="stat-card card-delay-1" style="border-left:5px solid var(--success);">
-                    <div class="d-flex justify-content-between">
-                        <div><p class="text-muted small mb-1 fw-bold text-uppercase">Available Slots</p><h3 class="fw-bold text-success"><?php echo number_format($range_available); ?></h3></div>
-=======
-
-            <!-- Available Slots -->
             <div class="col-md-4">
                 <div class="stat-card card-delay-1" style="border-left:5px solid var(--success);">
                     <button class="card-help-btn" onclick="showHelp('available-slots')"><i class="fas fa-question"></i></button>
                     <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted small mb-1 fw-bold text-uppercase">Available Slots</p>
-                            <h3 class="fw-bold text-success"><?php echo number_format($range_available); ?></h3>
-                        </div>
->>>>>>> ea99784 (Update museum files and added PHPMailer)
+                        <div><p class="text-muted small mb-1 fw-bold text-uppercase">Available Slots</p><h3 class="fw-bold text-success"><?php echo number_format($range_available); ?></h3></div>
                         <div class="icon-box bg-light text-success"><i class="fas fa-ticket-alt"></i></div>
                     </div>
                 </div>
             </div>
-<<<<<<< HEAD
         </div>
 
         <!-- STAT CARDS ROW 2 -->
         <div class="row g-4 mb-4">
             <div class="col-md-3">
                 <div class="stat-card card-delay-2" style="border-left:5px solid var(--primary);">
-                    <div class="d-flex justify-content-between">
-                        <div><p class="text-muted small mb-1 fw-bold">BOOKINGS</p><h3 class="fw-bold"><?php echo $total_bookings; ?></h3></div>
-=======
-
-        </div>
-
-        <!-- ════════════════════════════════════════
-             STAT CARDS ROW 2 — Bookings / Served / Today / Upcoming
-             ════════════════════════════════════════ -->
-        <div class="row g-4 mb-4">
-
-            <!-- Bookings -->
-            <div class="col-md-3">
-                <div class="stat-card card-delay-2" style="border-left:5px solid var(--primary);">
                     <button class="card-help-btn" onclick="showHelp('bookings')"><i class="fas fa-question"></i></button>
                     <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted small mb-1 fw-bold">BOOKINGS</p>
-                            <h3 class="fw-bold"><?php echo $total_bookings; ?></h3>
-                        </div>
->>>>>>> ea99784 (Update museum files and added PHPMailer)
+                        <div><p class="text-muted small mb-1 fw-bold">BOOKINGS</p><h3 class="fw-bold"><?php echo $total_bookings; ?></h3></div>
                         <div class="icon-box" style="background:#eef2ff;color:var(--primary);"><i class="fas fa-book"></i></div>
                     </div>
                 </div>
             </div>
-<<<<<<< HEAD
-            <div class="col-md-3">
-                <div class="stat-card card-delay-2" style="border-left:5px solid var(--success);">
-                    <div class="d-flex justify-content-between">
-                        <div><p class="text-muted small mb-1 fw-bold">SERVED</p><h3 class="fw-bold text-success"><?php echo $total_served; ?></h3></div>
-=======
-
-            <!-- Served -->
             <div class="col-md-3">
                 <div class="stat-card card-delay-2" style="border-left:5px solid var(--success);">
                     <button class="card-help-btn" onclick="showHelp('served')"><i class="fas fa-question"></i></button>
                     <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted small mb-1 fw-bold">SERVED</p>
-                            <h3 class="fw-bold text-success"><?php echo $total_served; ?></h3>
-                        </div>
->>>>>>> ea99784 (Update museum files and added PHPMailer)
+                        <div><p class="text-muted small mb-1 fw-bold">SERVED</p><h3 class="fw-bold text-success"><?php echo $total_served; ?></h3></div>
                         <div class="icon-box" style="background:#ecfdf5;color:var(--success);"><i class="fas fa-check-circle"></i></div>
                     </div>
                 </div>
             </div>
-<<<<<<< HEAD
-            <div class="col-md-3">
-                <div class="stat-card bg-light card-delay-3" style="border-left:5px solid #212529;">
-                    <div class="d-flex justify-content-between">
-                        <div><p class="text-muted small mb-1 fw-bold">TODAY'S VISITS</p><h3 class="fw-bold text-dark"><?php echo $today_visits; ?></h3></div>
-=======
-
-            <!-- Today's Visits -->
             <div class="col-md-3">
                 <div class="stat-card bg-light card-delay-3" style="border-left:5px solid #212529;">
                     <button class="card-help-btn" onclick="showHelp('todays-visits')"><i class="fas fa-question"></i></button>
                     <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted small mb-1 fw-bold">TODAY'S VISITS</p>
-                            <h3 class="fw-bold text-dark"><?php echo $today_visits; ?></h3>
-                        </div>
->>>>>>> ea99784 (Update museum files and added PHPMailer)
+                        <div><p class="text-muted small mb-1 fw-bold">TODAY'S VISITS</p><h3 class="fw-bold text-dark"><?php echo $today_visits; ?></h3></div>
                         <div class="icon-box bg-white text-dark shadow-sm"><i class="fas fa-walking"></i></div>
                     </div>
                 </div>
             </div>
-<<<<<<< HEAD
-            <div class="col-md-3">
-                <div class="stat-card bg-light card-delay-3" style="border-left:5px solid var(--primary);">
-                    <div class="d-flex justify-content-between">
-                        <div><p class="text-muted small mb-1 fw-bold">UPCOMING</p><h3 class="fw-bold text-primary"><?php echo $upcoming_visits; ?></h3></div>
-=======
-
-            <!-- Upcoming -->
             <div class="col-md-3">
                 <div class="stat-card bg-light card-delay-3" style="border-left:5px solid var(--primary);">
                     <button class="card-help-btn" onclick="showHelp('upcoming')"><i class="fas fa-question"></i></button>
                     <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted small mb-1 fw-bold">UPCOMING</p>
-                            <h3 class="fw-bold text-primary"><?php echo $upcoming_visits; ?></h3>
-                        </div>
->>>>>>> ea99784 (Update museum files and added PHPMailer)
+                        <div><p class="text-muted small mb-1 fw-bold">UPCOMING</p><h3 class="fw-bold text-primary"><?php echo $upcoming_visits; ?></h3></div>
                         <div class="icon-box bg-white text-primary shadow-sm"><i class="fas fa-calendar-alt"></i></div>
                     </div>
                 </div>
             </div>
-<<<<<<< HEAD
         </div>
 
         <!-- STAT CARDS ROW 3 -->
         <div class="row g-4 mb-4">
             <div class="col-md-4">
                 <div class="stat-card bg-warning bg-opacity-10 card-delay-4" style="border-left:5px solid #ffc107;">
-=======
-
-        </div>
-
-        <!-- ════════════════════════════════════════
-             STAT CARDS ROW 3 — Pending / System Status
-             ════════════════════════════════════════ -->
-        <div class="row g-4 mb-4">
-
-            <!-- Pending Requests -->
-            <div class="col-md-4">
-                <div class="stat-card bg-warning bg-opacity-10 card-delay-4" style="border-left:5px solid #ffc107;">
                     <button class="card-help-btn" onclick="showHelp('pending-requests')"><i class="fas fa-question"></i></button>
->>>>>>> ea99784 (Update museum files and added PHPMailer)
                     <p class="text-warning small mb-1 fw-bold">PENDING REQUESTS</p>
                     <h3 class="fw-bold text-warning" id="pendingCardText"><?php echo $pending_count; ?></h3>
                     <span class="small fw-bold">Requires Attention</span>
                 </div>
             </div>
-<<<<<<< HEAD
-            <div class="col-md-4">
-                <div class="stat-card bg-success bg-opacity-10 card-delay-4" style="border-left:5px solid var(--success);">
-=======
-
-            <!-- System Status -->
             <div class="col-md-4">
                 <div class="stat-card bg-success bg-opacity-10 card-delay-4" style="border-left:5px solid var(--success);">
                     <button class="card-help-btn" onclick="showHelp('system-status')"><i class="fas fa-question"></i></button>
->>>>>>> ea99784 (Update museum files and added PHPMailer)
                     <p class="text-success small mb-1 fw-bold">SYSTEM STATUS</p>
                     <h3 class="fw-bold text-success">ONLINE</h3>
                     <span class="small fw-bold">All systems normal</span>
                 </div>
             </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> ea99784 (Update museum files and added PHPMailer)
         </div>
 
         <!-- CHART -->
         <div class="chart-card">
-<<<<<<< HEAD
-=======
             <button class="card-help-btn" onclick="showHelp('bookings-chart')"><i class="fas fa-question"></i></button>
->>>>>>> ea99784 (Update museum files and added PHPMailer)
             <div class="chart-card-header">
                 <div>
                     <h5><i class="fas fa-chart-bar text-primary me-2"></i>Bookings Overview</h5>
@@ -905,25 +587,13 @@ $activities_res  = $conn->query("
             </div>
         </div>
 
-<<<<<<< HEAD
-        <!-- BOTTOM SECTION — equal 50/50 -->
-        <div class="bottom-section">
-
-            <!-- LEFT: PENDING TABLE -->
-            <form method="POST" action="admin.php" id="bulkForm">
-                <div class="table-wrap">
-                    <div class="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
-=======
-        <!-- ════════════════════════════════════════
-             BOTTOM SECTION — Pending Table + Activity Log (equal height)
-             ════════════════════════════════════════ -->
+        <!-- BOTTOM SECTION -->
         <div class="bottom-section">
 
             <!-- LEFT: PENDING TABLE -->
             <form method="POST" action="admin.php" id="bulkForm" style="display:contents;">
                 <div class="table-wrap">
                     <div class="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2" style="flex-shrink:0;">
->>>>>>> ea99784 (Update museum files and added PHPMailer)
                         <div class="d-flex align-items-center gap-3">
                             <h5 class="m-0 fw-bold">Pending Requests</h5>
                             <div id="bulkActionsContainer" style="display:none; gap:8px;">
@@ -939,11 +609,7 @@ $activities_res  = $conn->query("
                             <span class="badge bg-primary" id="tableBadge">Showing All</span>
                         </div>
                     </div>
-<<<<<<< HEAD
-                    <div style="overflow-x:auto;">
-=======
                     <div style="overflow-x:auto; flex:1;">
->>>>>>> ea99784 (Update museum files and added PHPMailer)
                         <table class="table mb-0" id="pendingTable">
                             <thead>
                                 <tr>
@@ -1003,11 +669,7 @@ $activities_res  = $conn->query("
             </form>
 
             <!-- RIGHT: ACTIVITY LOG -->
-<<<<<<< HEAD
-            <div class="activity-panel">
-=======
             <div class="activity-panel" id="activityPanel">
->>>>>>> ea99784 (Update museum files and added PHPMailer)
                 <div class="activity-header">
                     <div>
                         <h5>Recent Activity</h5>
@@ -1016,56 +678,13 @@ $activities_res  = $conn->query("
                     <i class="fas fa-circle-info text-muted" style="font-size:.8rem" title="Includes cancelled bookings"></i>
                 </div>
 
-<<<<<<< HEAD
-                <div class="activity-list">
-                    <?php if ($activities_res && $activities_res->num_rows > 0): ?>
-                        <?php while ($act = $activities_res->fetch_assoc()):
-                            $act_date_label = $act['visit_date'] ? date('D, M d', strtotime($act['visit_date'])) : '';
-
-                            if ($act['type'] === 'slot') {
-                                $icon_class  = 'slot';
-                                $icon        = 'fas fa-calendar-plus';
-                                $badge_class = 'slot';
-                                $badge_label = 'NEW SLOT';
-                                $title       = 'NEW VISIT SLOT CREATED: ' . $act_date_label;
-
-                            } elseif ($act['status'] === 'Confirmed') {
-                                $icon_class  = 'approved';
-                                $icon        = 'fas fa-check-circle';
-                                $badge_class = 'ok';
-                                $badge_label = 'CONFIRMED';
-                                $title       = 'BOOKING APPROVED: ' . htmlspecialchars($act['name']) . ' · ' . $act_date_label;
-
-                            } elseif ($act['status'] === 'Rejected') {
-                                $icon_class  = 'rejected';
-                                $icon        = 'fas fa-times-circle';
-                                $badge_class = 'rej';
-                                $badge_label = 'REJECTED';
-                                $title       = 'BOOKING REJECTED: ' . htmlspecialchars($act['name']);
-
-                            } elseif ($act['status'] === 'Cancelled') {
-                                /* ── VISITOR-CANCELLED BOOKINGS NOW VISIBLE ── */
-                                $icon_class  = 'cancelled';
-                                $icon        = 'fas fa-ban';
-                                $badge_class = 'cancelled';
-                                $badge_label = 'CANCELLED';
-                                $title       = 'BOOKING CANCELLED by visitor: ' . htmlspecialchars($act['name']) . ($act_date_label ? ' · ' . $act_date_label : '');
-
-                            } else {
-                                $icon_class  = 'booking';
-                                $icon        = 'fas fa-bookmark';
-                                $badge_class = 'new';
-                                $badge_label = 'NEW';
-                                $title       = 'NEW BOOKING: ' . htmlspecialchars($act['name']) . ' — ' . $act_date_label;
-=======
-                <!-- Activity list — given an ID for AJAX replacement -->
                 <div class="activity-list" id="activityList">
                     <?php if ($activities_res && $activities_res->num_rows > 0): ?>
                         <?php while ($act = $activities_res->fetch_assoc()):
                             $act_date_label = $act['visit_date'] ? date('D, M d', strtotime($act['visit_date'])) : '';
                             if ($act['type'] === 'slot') {
-                                $icon_class = 'slot';  $icon = 'fas fa-calendar-plus';
-                                $badge_class = 'slot'; $badge_label = 'NEW SLOT';
+                                $icon_class = 'slot';      $icon = 'fas fa-calendar-plus';
+                                $badge_class = 'slot';     $badge_label = 'NEW SLOT';
                                 $title = 'NEW VISIT SLOT CREATED: ' . $act_date_label;
                             } elseif ($act['status'] === 'Confirmed') {
                                 $icon_class = 'approved';  $icon = 'fas fa-check-circle';
@@ -1083,7 +702,6 @@ $activities_res  = $conn->query("
                                 $icon_class = 'booking';   $icon = 'fas fa-bookmark';
                                 $badge_class = 'new';      $badge_label = 'NEW';
                                 $title = 'NEW BOOKING: ' . htmlspecialchars($act['name']) . ' — ' . $act_date_label;
->>>>>>> ea99784 (Update museum files and added PHPMailer)
                             }
                         ?>
                         <div class="activity-item">
@@ -1100,14 +718,6 @@ $activities_res  = $conn->query("
                     <?php endif; ?>
                 </div>
 
-<<<<<<< HEAD
-                <div class="act-pagination">
-                    <span style="font-size:.72rem;">Page <strong><?php echo $act_page; ?></strong> of <?php echo max(1, $act_total_pages); ?> &nbsp;·&nbsp; <?php echo $act_total; ?> total</span>
-                    <div class="pg-btns">
-                        <a href="?act_page=<?php echo $act_page - 1; ?>" class="pg-btn <?php echo $act_page <= 1 ? 'disabled' : ''; ?>">Prev</a>
-                        <a href="?act_page=<?php echo $act_page + 1; ?>" class="pg-btn <?php echo $act_page >= $act_total_pages ? 'disabled' : ''; ?>">Next</a>
-=======
-                <!-- Pagination — buttons call JS, NOT page reload -->
                 <div class="act-pagination" id="actPagination">
                     <span id="actPageLabel" style="font-size:.72rem;">
                         Page <strong><?php echo $act_page; ?></strong> of <?php echo max(1, $act_total_pages); ?>
@@ -1124,7 +734,6 @@ $activities_res  = $conn->query("
                             onclick="loadActivityPage(<?php echo $act_page + 1; ?>)">
                             Next<i class="fas fa-chevron-right ms-1" style="font-size:.6rem;"></i>
                         </button>
->>>>>>> ea99784 (Update museum files and added PHPMailer)
                     </div>
                 </div>
             </div>
@@ -1134,26 +743,18 @@ $activities_res  = $conn->query("
 </div>
 </div>
 
-<<<<<<< HEAD
-=======
-<!-- ══════════════════════════════════════════
-     HELP INFO MODAL
-     ══════════════════════════════════════════ -->
+<!-- HELP MODAL -->
 <div class="modal fade" id="helpModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
         <div class="modal-content border-0">
             <div class="modal-body p-4 text-center">
-                <!-- Dynamic content injected by showHelp() -->
                 <div id="helpModalInner"></div>
-                <button type="button" class="btn btn-primary w-100 mt-3 fw-bold" data-bs-dismiss="modal" style="border-radius:10px;">
-                    Got it!
-                </button>
+                <button type="button" class="btn btn-primary w-100 mt-3 fw-bold" data-bs-dismiss="modal" style="border-radius:10px;">Got it!</button>
             </div>
         </div>
     </div>
 </div>
 
->>>>>>> ea99784 (Update museum files and added PHPMailer)
 <!-- BOOKING DETAILS MODAL -->
 <div class="modal fade" id="detailsModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -1247,20 +848,12 @@ $activities_res  = $conn->query("
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-<<<<<<< HEAD
-// ── NOTIFICATION BELL ──
-function toggleNotif(e) {
-    e.stopPropagation();
-    // Close profile if open
-=======
 /* ══════════════════════════════════════════
    HELP CARD DATA
-   Each key maps to a card's explanation.
    ══════════════════════════════════════════ */
 const helpData = {
     'total-capacity': {
-        icon: 'fas fa-layer-group',
-        iconBg: '#eef2ff', iconColor: '#4361ee',
+        icon: 'fas fa-layer-group', iconBg: '#eef2ff', iconColor: '#4361ee',
         tag: 'Schedule Info', tagBg: '#eef2ff', tagColor: '#4361ee',
         title: 'Total Capacity',
         desc: 'This is the <strong>maximum number of visitors</strong> that can be accommodated across all your created time slots combined.',
@@ -1270,8 +863,7 @@ const helpData = {
         ]
     },
     'total-booked': {
-        icon: 'fas fa-users',
-        iconBg: '#e0f7fa', iconColor: '#0891b2',
+        icon: 'fas fa-users', iconBg: '#e0f7fa', iconColor: '#0891b2',
         tag: 'Bookings', tagBg: '#e0f7fa', tagColor: '#0891b2',
         title: 'Total Booked',
         desc: 'The <strong>number of slots already taken</strong> by visitors with confirmed bookings across all schedules.',
@@ -1281,74 +873,67 @@ const helpData = {
         ]
     },
     'available-slots': {
-        icon: 'fas fa-ticket-alt',
-        iconBg: '#ecfdf5', iconColor: '#10b981',
+        icon: 'fas fa-ticket-alt', iconBg: '#ecfdf5', iconColor: '#10b981',
         tag: 'Availability', tagBg: '#ecfdf5', tagColor: '#059669',
         title: 'Available Slots',
         desc: 'The <strong>remaining open spots</strong> that visitors can still book. This is Total Capacity minus Total Booked.',
         bullets: [
-            { icon: 'fas fa-door-open text-success',  text: 'If this is 0, no more bookings can be made.' },
+            { icon: 'fas fa-door-open text-success',     text: 'If this is 0, no more bookings can be made.' },
             { icon: 'fas fa-calendar-plus text-primary', text: 'Create new slots to open more availability.' },
         ]
     },
     'bookings': {
-        icon: 'fas fa-book',
-        iconBg: '#eef2ff', iconColor: '#4361ee',
+        icon: 'fas fa-book', iconBg: '#eef2ff', iconColor: '#4361ee',
         tag: 'All Records', tagBg: '#eef2ff', tagColor: '#4361ee',
         title: 'Total Bookings',
-        desc: 'The <strong>total number of booking requests</strong> ever submitted by visitors — regardless of their current status.',
+        desc: 'The <strong>total number of booking requests</strong> ever submitted by visitors — regardless of status.',
         bullets: [
-            { icon: 'fas fa-list text-primary',         text: 'Includes Pending, Confirmed, Rejected, and Cancelled bookings.' },
-            { icon: 'fas fa-history text-secondary',    text: 'Check Booking History for a full breakdown.' },
+            { icon: 'fas fa-list text-primary',      text: 'Includes Pending, Confirmed, Rejected, and Cancelled bookings.' },
+            { icon: 'fas fa-history text-secondary', text: 'Check Booking History for a full breakdown.' },
         ]
     },
     'served': {
-        icon: 'fas fa-check-circle',
-        iconBg: '#ecfdf5', iconColor: '#10b981',
+        icon: 'fas fa-check-circle', iconBg: '#ecfdf5', iconColor: '#10b981',
         tag: 'Confirmed Guests', tagBg: '#ecfdf5', tagColor: '#059669',
         title: 'Total Served',
         desc: 'The <strong>total number of guests</strong> across all bookings that have been approved and confirmed by the admin.',
         bullets: [
-            { icon: 'fas fa-user-check text-success',   text: 'Counts the number of guests (pax), not just bookings.' },
-            { icon: 'fas fa-star text-warning',         text: 'Higher numbers mean more visitors were successfully accommodated.' },
+            { icon: 'fas fa-user-check text-success', text: 'Counts the number of guests (pax), not just bookings.' },
+            { icon: 'fas fa-star text-warning',       text: 'Higher numbers mean more visitors were accommodated.' },
         ]
     },
     'todays-visits': {
-        icon: 'fas fa-walking',
-        iconBg: '#f1f5f9', iconColor: '#1e293b',
+        icon: 'fas fa-walking', iconBg: '#f1f5f9', iconColor: '#1e293b',
         tag: "Today's Data", tagBg: '#f1f5f9', tagColor: '#475569',
         title: "Today's Visits",
         desc: 'The <strong>number of guests scheduled to visit today</strong> with confirmed bookings.',
         bullets: [
-            { icon: 'fas fa-calendar-day text-dark',    text: 'Only counts confirmed bookings for today\'s date.' },
-            { icon: 'fas fa-clock text-primary',        text: 'Resets to 0 at the start of each new day.' },
+            { icon: 'fas fa-calendar-day text-dark', text: "Only counts confirmed bookings for today's date." },
+            { icon: 'fas fa-clock text-primary',     text: 'Resets to 0 at the start of each new day.' },
         ]
     },
     'upcoming': {
-        icon: 'fas fa-calendar-alt',
-        iconBg: '#eef2ff', iconColor: '#4361ee',
+        icon: 'fas fa-calendar-alt', iconBg: '#eef2ff', iconColor: '#4361ee',
         tag: 'Future Visits', tagBg: '#eef2ff', tagColor: '#4361ee',
         title: 'Upcoming Visits',
         desc: 'The <strong>total guests with confirmed bookings on future dates</strong> — visitors who are yet to arrive.',
         bullets: [
-            { icon: 'fas fa-arrow-right text-primary',  text: 'Only counts bookings scheduled after today.' },
-            { icon: 'fas fa-bell text-warning',         text: 'Keep an eye on this to prepare for busy days ahead.' },
+            { icon: 'fas fa-arrow-right text-primary', text: 'Only counts bookings scheduled after today.' },
+            { icon: 'fas fa-bell text-warning',        text: 'Keep an eye on this to prepare for busy days ahead.' },
         ]
     },
     'pending-requests': {
-        icon: 'fas fa-hourglass-half',
-        iconBg: '#fef9c3', iconColor: '#b45309',
+        icon: 'fas fa-hourglass-half', iconBg: '#fef9c3', iconColor: '#b45309',
         tag: 'Needs Action', tagBg: '#fef9c3', tagColor: '#92400e',
         title: 'Pending Requests',
-        desc: 'Booking requests that are <strong>waiting for your decision</strong>. These visitors have submitted their details but haven\'t been approved or rejected yet.',
+        desc: "Booking requests that are <strong>waiting for your decision</strong>. These visitors have submitted their details but haven't been approved or rejected yet.",
         bullets: [
             { icon: 'fas fa-exclamation-circle text-warning', text: 'Review these as soon as possible so visitors know their status.' },
             { icon: 'fas fa-eye text-primary',                text: 'Click "View" on each row to check their GCash receipt.' },
         ]
     },
     'system-status': {
-        icon: 'fas fa-server',
-        iconBg: '#ecfdf5', iconColor: '#10b981',
+        icon: 'fas fa-server', iconBg: '#ecfdf5', iconColor: '#10b981',
         tag: 'System Health', tagBg: '#ecfdf5', tagColor: '#059669',
         title: 'System Status',
         desc: 'Shows whether the <strong>VisitEase system is running normally</strong>. ONLINE means everything is working fine.',
@@ -1358,29 +943,21 @@ const helpData = {
         ]
     },
     'bookings-chart': {
-        icon: 'fas fa-chart-bar',
-        iconBg: '#eef2ff', iconColor: '#4361ee',
+        icon: 'fas fa-chart-bar', iconBg: '#eef2ff', iconColor: '#4361ee',
         tag: 'Analytics', tagBg: '#eef2ff', tagColor: '#4361ee',
         title: 'Bookings Overview Chart',
         desc: 'A <strong>bar chart showing how many bookings were made each day</strong> over the past 7 days.',
         bullets: [
             { icon: 'fas fa-calendar-week text-primary', text: 'Each bar represents one day — taller = more bookings.' },
-            { icon: 'fas fa-trending-up text-success',   text: 'Useful for spotting busy days and booking trends.' },
+            { icon: 'fas fa-chart-line text-success',    text: 'Useful for spotting busy days and booking trends.' },
         ]
     },
 };
 
-/* ──────────────────────────────────────────
-   showHelp(cardKey) — populate & open modal
-   ────────────────────────────────────────── */
 function showHelp(cardKey) {
     const d = helpData[cardKey];
     if (!d) return;
-
-    const bulletsHTML = d.bullets.map(b =>
-        `<li><i class="${b.icon}"></i><span>${b.text}</span></li>`
-    ).join('');
-
+    const bulletsHTML = d.bullets.map(b => `<li><i class="${b.icon}"></i><span>${b.text}</span></li>`).join('');
     document.getElementById('helpModalInner').innerHTML = `
         <div class="help-modal-icon" style="background:${d.iconBg}; color:${d.iconColor};">
             <i class="${d.icon}"></i>
@@ -1390,59 +967,39 @@ function showHelp(cardKey) {
         <p class="help-desc">${d.desc}</p>
         <ul class="help-bullets text-start">${bulletsHTML}</ul>
     `;
-
     new bootstrap.Modal(document.getElementById('helpModal')).show();
 }
 
 /* ══════════════════════════════════════════
-   NOTIFICATION BELL — "seen" dot logic
-   The dot hides once the admin clicks the bell.
-   It reappears only when NEW pending IDs arrive
-   (i.e., different from the last seen set).
+   NOTIFICATION BELL
    ══════════════════════════════════════════ */
 (function initNotifDot() {
-    const wrapper     = document.getElementById('notifWrapper');
+    const wrapper    = document.getElementById('notifWrapper');
     if (!wrapper) return;
-    const currentIds  = wrapper.dataset.pendingIds || '';
-    const seenIds     = localStorage.getItem('ve_seen_notif_ids') || '';
-    const dot         = document.getElementById('notifDot');
+    const currentIds = wrapper.dataset.pendingIds || '';
+    const seenIds    = localStorage.getItem('ve_seen_notif_ids') || '';
+    const dot        = document.getElementById('notifDot');
     if (!dot) return;
-
-    // If the admin has already seen these exact pending IDs → hide dot
-    if (currentIds !== '' && currentIds === seenIds) {
-        dot.style.display = 'none';
-    }
+    if (currentIds !== '' && currentIds === seenIds) dot.style.display = 'none';
 })();
 
 function toggleNotif(e) {
     e.stopPropagation();
->>>>>>> ea99784 (Update museum files and added PHPMailer)
     document.getElementById('profileDropdown').classList.remove('show');
     document.getElementById('profileWrapper').classList.remove('open');
     document.getElementById('notifDropdown').classList.toggle('show');
-
-    // Mark current pending IDs as "seen" → hide the red dot
     const wrapper    = document.getElementById('notifWrapper');
     const currentIds = wrapper ? (wrapper.dataset.pendingIds || '') : '';
-    if (currentIds) {
-        localStorage.setItem('ve_seen_notif_ids', currentIds);
-    }
+    if (currentIds) localStorage.setItem('ve_seen_notif_ids', currentIds);
     const dot = document.getElementById('notifDot');
     if (dot) dot.style.display = 'none';
 }
 
-<<<<<<< HEAD
-// ── PROFILE DROPDOWN ──
-function toggleProfile(e) {
-    e.stopPropagation();
-    // Close notif if open
-=======
 /* ══════════════════════════════════════════
    PROFILE DROPDOWN
    ══════════════════════════════════════════ */
 function toggleProfile(e) {
     e.stopPropagation();
->>>>>>> ea99784 (Update museum files and added PHPMailer)
     document.getElementById('notifDropdown').classList.remove('show');
     const dd = document.getElementById('profileDropdown');
     const wr = document.getElementById('profileWrapper');
@@ -1450,17 +1007,9 @@ function toggleProfile(e) {
     wr.classList.toggle('open');
 }
 
-<<<<<<< HEAD
-// Close both on outside click
 document.addEventListener('click', function (e) {
     if (!document.getElementById('notifWrapper').contains(e.target))
         document.getElementById('notifDropdown').classList.remove('show');
-
-=======
-document.addEventListener('click', function (e) {
-    if (!document.getElementById('notifWrapper').contains(e.target))
-        document.getElementById('notifDropdown').classList.remove('show');
->>>>>>> ea99784 (Update museum files and added PHPMailer)
     if (!document.getElementById('profileWrapper').contains(e.target)) {
         document.getElementById('profileDropdown').classList.remove('show');
         document.getElementById('profileWrapper').classList.remove('open');
@@ -1514,13 +1063,9 @@ new Chart(ctx, {
     }
 });
 
-<<<<<<< HEAD
-// ── VIEW DETAILS MODAL ──
-=======
 /* ══════════════════════════════════════════
    VIEW BOOKING DETAILS MODAL
    ══════════════════════════════════════════ */
->>>>>>> ea99784 (Update museum files and added PHPMailer)
 function viewDetails(name, gcashName, gcashRef, request, visitDate, visitTime, receiptPath) {
     document.getElementById('modalGcashName').innerText = gcashName;
     document.getElementById('modalRef').innerText       = gcashRef;
@@ -1549,13 +1094,9 @@ function viewDetails(name, gcashName, gcashRef, request, visitDate, visitTime, r
     new bootstrap.Modal(document.getElementById('detailsModal')).show();
 }
 
-<<<<<<< HEAD
-// ── LIVE SEARCH ──
-=======
 /* ══════════════════════════════════════════
    LIVE SEARCH (pending table)
    ══════════════════════════════════════════ */
->>>>>>> ea99784 (Update museum files and added PHPMailer)
 document.getElementById('searchInput').addEventListener('keyup', function () {
     const filter = this.value.toLowerCase();
     let visible  = 0;
@@ -1570,13 +1111,9 @@ document.getElementById('searchInput').addEventListener('keyup', function () {
     else { badge.innerText = `Found: ${visible}`; badge.className = visible > 0 ? 'badge bg-success' : 'badge bg-danger'; }
 });
 
-<<<<<<< HEAD
-// ── BULK ACTIONS ──
-=======
 /* ══════════════════════════════════════════
    BULK ACTIONS
    ══════════════════════════════════════════ */
->>>>>>> ea99784 (Update museum files and added PHPMailer)
 document.getElementById('selectAll').addEventListener('change', function () {
     document.querySelectorAll('.row-chk').forEach(chk => {
         if (chk.closest('tr').style.display !== 'none') chk.checked = this.checked;
@@ -1590,14 +1127,8 @@ function toggleBulkButtons() {
     if (!count) document.getElementById('selectAll').checked = false;
 }
 
-<<<<<<< HEAD
-// ── AUTO-REFRESH (15s) ──
-=======
 /* ══════════════════════════════════════════
    ACTIVITY LOG — AJAX PAGINATION
-   No full-page reload. Fetches only the
-   activity list & pagination HTML from the
-   server and swaps them in-place.
    ══════════════════════════════════════════ */
 let currentActPage = <?php echo $act_page; ?>;
 let actTotalPages  = <?php echo max(1, $act_total_pages); ?>;
@@ -1605,13 +1136,11 @@ let actTotal       = <?php echo $act_total; ?>;
 
 function loadActivityPage(page) {
     if (page < 1 || page > actTotalPages) return;
-
     const listEl  = document.getElementById('activityList');
     const prevBtn = document.getElementById('actPrevBtn');
     const nextBtn = document.getElementById('actNextBtn');
     const labelEl = document.getElementById('actPageLabel');
 
-    // Show loading state
     listEl.classList.add('loading');
     prevBtn.disabled = true;
     nextBtn.disabled = true;
@@ -1621,27 +1150,15 @@ function loadActivityPage(page) {
         .then(html => {
             const doc     = new DOMParser().parseFromString(html, 'text/html');
             const newList = doc.getElementById('activityList');
+            if (newList) listEl.innerHTML = newList.innerHTML;
 
-            if (newList) {
-                listEl.innerHTML = newList.innerHTML;
-            }
-
-            // Update page state
             currentActPage = page;
+            if (labelEl) labelEl.innerHTML = `Page <strong>${page}</strong> of ${actTotalPages} &nbsp;·&nbsp; ${actTotal} total`;
 
-            // Update label
-            if (labelEl) {
-                labelEl.innerHTML = `Page <strong>${page}</strong> of ${actTotalPages} &nbsp;·&nbsp; ${actTotal} total`;
-            }
-
-            // Update button states
             prevBtn.disabled = (page <= 1);
             nextBtn.disabled = (page >= actTotalPages);
-
-            // Update onclick handlers
-            prevBtn.onclick = () => loadActivityPage(page - 1);
-            nextBtn.onclick = () => loadActivityPage(page + 1);
-
+            prevBtn.onclick  = () => loadActivityPage(page - 1);
+            nextBtn.onclick  = () => loadActivityPage(page + 1);
             listEl.classList.remove('loading');
         })
         .catch(() => {
@@ -1652,11 +1169,8 @@ function loadActivityPage(page) {
 }
 
 /* ══════════════════════════════════════════
-   AUTO-REFRESH (every 15s) — updates pending
-   table, notification bell, pending count
-   card, and activity totals without reloading.
+   AUTO-REFRESH every 15 seconds
    ══════════════════════════════════════════ */
->>>>>>> ea99784 (Update museum files and added PHPMailer)
 function fetchUpdates() {
     if (document.getElementById('searchInput').value.trim()) return;
     if (document.querySelectorAll('.row-chk:checked').length > 0) return;
@@ -1666,11 +1180,7 @@ function fetchUpdates() {
         .then(html => {
             const doc = new DOMParser().parseFromString(html, 'text/html');
 
-<<<<<<< HEAD
-            // Update pending table
-=======
-            // ── Pending table body ──
->>>>>>> ea99784 (Update museum files and added PHPMailer)
+            // Pending table body
             const nb = doc.querySelector('#pendingTable tbody');
             const cb = document.querySelector('#pendingTable tbody');
             if (nb && cb) {
@@ -1678,56 +1188,31 @@ function fetchUpdates() {
                 document.querySelectorAll('.row-chk').forEach(chk => chk.addEventListener('change', toggleBulkButtons));
             }
 
-<<<<<<< HEAD
-            // Update notif bell
-            const nn = doc.querySelector('#notifWrapper');
-            const cn = document.querySelector('#notifWrapper');
-            if (nn && cn) {
-                const open = document.getElementById('notifDropdown').classList.contains('show');
-                cn.innerHTML = nn.innerHTML;
-                if (open) document.getElementById('notifDropdown').classList.add('show');
-            }
-
-            // Update pending count card
-            const np = doc.querySelector('#pendingCardText');
-            const cp = document.querySelector('#pendingCardText');
-            if (np && cp) cp.innerHTML = np.innerHTML;
-=======
-            // ── Notification bell — only update dot if NEW IDs arrived ──
+            // Notification bell
             const newWrapper = doc.getElementById('notifWrapper');
             const curWrapper = document.getElementById('notifWrapper');
             if (newWrapper && curWrapper) {
                 const newIds  = newWrapper.dataset.pendingIds || '';
                 const seenIds = localStorage.getItem('ve_seen_notif_ids') || '';
                 const isOpen  = document.getElementById('notifDropdown').classList.contains('show');
-
-                // Swap inner HTML
-                curWrapper.innerHTML   = newWrapper.innerHTML;
+                curWrapper.innerHTML = newWrapper.innerHTML;
                 curWrapper.dataset.pendingIds = newIds;
-
-                // Re-apply "seen" dot suppression
                 const dot = document.getElementById('notifDot');
-                if (dot && newIds !== '' && newIds === seenIds) {
-                    dot.style.display = 'none';
-                }
-                // Re-open dropdown if it was open
+                if (dot && newIds !== '' && newIds === seenIds) dot.style.display = 'none';
                 if (isOpen) document.getElementById('notifDropdown')?.classList.add('show');
             }
 
-            // ── Pending count card ──
+            // Pending count card
             const np = doc.querySelector('#pendingCardText');
             const cp = document.querySelector('#pendingCardText');
             if (np && cp) cp.innerHTML = np.innerHTML;
 
-            // ── Update activity total count (in case new bookings arrived) ──
-            const newActTotal = doc.querySelector('#actPageLabel');
-            // We only update if user is on page 1 to avoid confusion
-            if (newActTotal && currentActPage === 1) {
+            // Activity list (only update if on page 1)
+            if (currentActPage === 1) {
                 const newList = doc.getElementById('activityList');
                 const curList = document.getElementById('activityList');
                 if (newList && curList) curList.innerHTML = newList.innerHTML;
             }
->>>>>>> ea99784 (Update museum files and added PHPMailer)
         })
         .catch(() => {});
 }
