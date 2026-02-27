@@ -276,7 +276,7 @@ footer p { color:#a89880; font-size:.9rem; }
 
     <div class="col-md-5 rvl">
       <div class="bio-photo">
-        <img src="pedro.png" alt="Pedro S. Tolentino">
+        <img src="pics/pedro.png" alt="Pedro S. Tolentino">
         <div class="bio-photo-overlay">
           <div class="bio-badge">Legacy</div>
           <h3 style="font-family:var(--fd);font-size:1.6rem;color:#f2ece0;font-weight:700;margin-bottom:4px;line-height:1.2">Pedro S. Tolentino</h3>
@@ -335,12 +335,12 @@ footer p { color:#a89880; font-size:.9rem; }
 <div class="col-lg-6 mb-4 mb-lg-0 rvl">
 <div style="padding-right:2rem;border-right:1px solid var(--border)">
 <div class="cgrid">
-<img class="ci c1" src="pedro landing.jpg" alt="">
-<img class="ci c2" src="sumbrero.jpg" alt="">
-<img class="ci c3" src="sungka.jpg" alt="">
-<img class="ci c4" src="painting.jpg" alt="">
-<img class="ci c5" src="martilyo spada.jpg" alt="">
-<img class="ci c6" src="brush.jpg" alt="">
+<img class="ci c1" src="pics/pedro landing.jpg" alt="">
+<img class="ci c2" src="pics/sumbrero.jpg" alt="">
+<img class="ci c3" src="pics/sungka.jpg" alt="">
+<img class="ci c4" src="pics/painting.jpg" alt="">
+<img class="ci c5" src="pics/martilyo spada.jpg" alt="">
+<img class="ci c6" src="pics/brush.jpg" alt="">
 </div>
 </div>
 </div>

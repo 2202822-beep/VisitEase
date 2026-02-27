@@ -480,10 +480,10 @@
     <script>
         // ===== SLIDER =====
         const artifacts = [
-            { id: 0, title: "Pedro S. Tolentino Museum", location: "Main Gallery Hub", desc: "Juan Luna's magnum opus. A harrowing glimpse into the bloodied floors of the Roman Colosseum, symbolizing the plight of the Filipino people under colonial rule.", img: "pedro landing.jpg" },
-            { id: 1, title: "Achievements and Certificate", location: "Archive Section", desc: "Recognizing his vital contributions to preserving local heritage. This collection features important manuscripts, historical records, and academic accolades compiled for future generations.", img: "494358990_1047988036664015_4979249687492318735_n.jpg" },
-            { id: 2, title: "The Mayor's Attire", location: "VIP Quarters", desc: "A collection of formal wear and official suits worn by Pedro S. Tolentino during his tenure. These preserved garments represent the dignity of a dedicated public servant.", img: "494825054_1641213353259511_8978938757165686738_n.jpg" },
-            { id: 3, title: "A Legacy of Public Service", location: "Heritage Vault", desc: "An intimate collection of personal memorabilia, accolades, and historical documents defining the life of Mayor Pedro S. Tolentino. A tribute to his enduring dedication.", img: "494359485_2155062051631886_4951905305416589935_n.jpg" }
+            { id: 0, title: "Pedro S. Tolentino Museum", location: "Main Gallery Hub", desc: "Juan Luna's magnum opus. A harrowing glimpse into the bloodied floors of the Roman Colosseum, symbolizing the plight of the Filipino people under colonial rule.", img: "pics/pedro landing.jpg" },
+            { id: 1, title: "Achievements and Certificate", location: "Archive Section", desc: "Recognizing his vital contributions to preserving local heritage. This collection features important manuscripts, historical records, and academic accolades compiled for future generations.", img: "pics/certificate.jpg" },
+            { id: 2, title: "The Mayor's Attire", location: "VIP Quarters", desc: "A collection of formal wear and official suits worn by Pedro S. Tolentino during his tenure. These preserved garments represent the dignity of a dedicated public servant.", img: "pics/formal.jpg" },
+            { id: 3, title: "A Legacy of Public Service", location: "Heritage Vault", desc: "An intimate collection of personal memorabilia, accolades, and historical documents defining the life of Mayor Pedro S. Tolentino. A tribute to his enduring dedication.", img: "pics/painting.jpg" }
         ];
 
         let currentIndex = 0, isAnimating = false;
