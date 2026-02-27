@@ -46,7 +46,7 @@ if ($result && $result->num_rows > 0) {
 
         .bg-image-animate {
             width: 100%; height: 100%;
-            background-image: url("494813889_1218375400006712_3528886370220596685_n.jpg"); 
+            background-image: url("pedro landing.jpg"); 
             background-size: cover; background-position: center;
             animation: slowZoom 25s linear infinite alternate;
         }

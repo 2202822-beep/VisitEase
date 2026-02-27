@@ -537,6 +537,8 @@
                     <a href="index.php" class="nav-link-custom">Home</a>
                     <a href="exhibits.php" class="nav-link-custom">Explore</a>
                     <a href="gallery.php" class="nav-link-custom active">Gallery</a>
+                    <a href="about.php"      class="nav-link-custom">About</a>
+                    <a href="faqs.php"      class="nav-link-custom">FAQs</a>
                     <a href="check_status.php" class="nav-link-custom">Track Status</a>
                     <a href="book.php" class="btn-book">Book Visit</a>
                 </div>

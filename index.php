@@ -18,8 +18,8 @@
             --bg-secondary: #efe8d8;
             --bg-card: #ffffff;
             --text-main: #231e14;
-            --text-muted: #4a4235; /* PINATINGKAD PARA KITANG-KITA */
-            --text-light: #7c6851; /* PINATINGKAD PARA KITANG-KITA */
+            --text-muted: #4a4235;
+            --text-light: #7c6851;
             --accent-gold: #b8842a;
             --accent-brown: #7c5c2e;
             --accent-terracotta: #c4704a;
@@ -58,29 +58,16 @@
 
         .slider-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(
-                108deg,
-                rgba(247,242,234,0.85) 0%,
-                rgba(247,242,234,0.65) 25%,
-                rgba(247,242,234,0.20) 50%,
-                rgba(247,242,234,0.00) 100%
-            );
+            background: linear-gradient(108deg, rgba(247,242,234,0.85) 0%, rgba(247,242,234,0.65) 25%, rgba(247,242,234,0.20) 50%, rgba(247,242,234,0.00) 100%);
             z-index: 3;
         }
-        .slider-overlay-bottom {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 130px;
-            background: linear-gradient(to top, var(--bg-body), transparent);
-            z-index: 4;
-        }
+        .slider-overlay-bottom { position: absolute; bottom: 0; left: 0; width: 100%; height: 130px; background: linear-gradient(to top, var(--bg-body), transparent); z-index: 4; }
 
         .slider-content { position: relative; z-index: 5; padding-left: 6vw; max-width: 670px; }
         .slide-eyebrow { color: var(--accent-terracotta) !important; text-transform: uppercase; letter-spacing: 4px; font-size: 0.72rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; font-family: var(--font-body); }
         .slide-eyebrow::before { content: ''; display: inline-block; width: 28px; height: 1px; background: var(--accent-terracotta); }
         .slide-title { font-size: 4.2rem; line-height: 1.05; font-family: var(--font-display); margin-bottom: 22px; font-weight: 700; color: var(--text-main) !important; }
-        
-        /* PINALAKING FONT AT MAS MAKAPAL NA FONT-WEIGHT */
         .slide-desc { font-size: 1.05rem; color: var(--text-muted) !important; line-height: 1.75; margin-bottom: 36px; font-weight: 500; max-width: 88%; font-family: var(--font-body); border-left: 3px solid var(--accent-gold); padding: 14px 18px; border-radius: 0 4px 4px 0; background: rgba(247,242,234,0.85); backdrop-filter: blur(6px); }
-        
         .btn-explore { background-color: var(--accent-brown); color: #fff !important; padding: 13px 34px; border-radius: 2px; text-decoration: none; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px; transition: all 0.3s; border: 1px solid var(--accent-brown); display: inline-flex; align-items: center; gap: 10px; }
         .btn-explore:hover { background-color: transparent; color: var(--accent-brown) !important; transform: translateY(-2px); box-shadow: 0 8px 20px var(--shadow-warm); }
 
@@ -130,17 +117,13 @@
         .info-item:hover { transform: translateY(-2px); background: #fff; border-color: var(--border-soft); box-shadow: 0 4px 16px var(--shadow-warm); }
         .info-icon { width: 38px; height: 38px; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 0.88rem; flex-shrink: 0; color: #fff; }
         .info-item h6 { font-family: var(--font-body) !important; font-size: 0.86rem !important; font-weight: 700 !important; color: var(--text-main) !important; text-transform: none !important; letter-spacing: 0.3px; margin-bottom: 4px; }
-        
-        /* PINALAKING FONT AT MAS MAKAPAL NA FONT-WEIGHT */
         .info-item p { color: var(--text-muted) !important; font-size: 0.85rem; font-weight: 500; margin: 0; }
-        
         .icon-gold { background-color: var(--accent-gold); }
         .icon-brown { background-color: var(--accent-brown); }
         .icon-terracotta { background-color: var(--accent-terracotta); }
         .icon-sage { background-color: var(--accent-sage); }
         .icon-dark { background-color: var(--accent-dark); }
 
-        /* Side panel */
         .side-info-panel { display: flex; flex-direction: column; gap: 18px; height: 100%; }
         .side-info-block { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 4px; padding: 26px; box-shadow: 0 2px 14px var(--shadow-warm); flex: 1; position: relative; overflow: hidden; }
         .side-info-block::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 3px; }
@@ -156,18 +139,13 @@
 
         /* ===== LOCATION ===== */
         #location { background: var(--bg-secondary); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); }
-        
-        /* NILAGYAN NG SOLID BOARDER LINE ANG MAP PARA DI NAKALUTANG */
         .map-container { border-radius: 6px; overflow: hidden; box-shadow: 0 8px 40px var(--shadow-warm); border: 3px solid var(--accent-brown); }
-        
         .btn-map { background-color: var(--accent-dark); color: #fff !important; padding: 13px 36px; border-radius: 2px; text-decoration: none; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px; transition: all 0.3s; border: 1px solid var(--accent-dark); display: inline-flex; align-items: center; gap: 10px; margin-top: 24px; }
         .btn-map:hover { background-color: transparent; color: var(--accent-dark) !important; box-shadow: 0 6px 18px var(--shadow-warm); transform: translateY(-2px); }
         .location-details { display: flex; flex-direction: column; gap: 14px; height: 100%; }
         .loc-block { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 3px; padding: 20px 22px; box-shadow: 0 2px 10px var(--shadow-warm); display: flex; align-items: flex-start; gap: 14px; }
         .loc-icon { width: 36px; height: 36px; background: var(--bg-secondary); border: 1px solid var(--border-soft); border-radius: 2px; display: flex; align-items: center; justify-content: center; color: var(--accent-gold); font-size: 0.9rem; flex-shrink: 0; }
         .loc-block h6 { font-family: var(--font-body) !important; font-size: 0.7rem !important; font-weight: 700 !important; text-transform: uppercase; letter-spacing: 2px; color: var(--text-light) !important; margin-bottom: 5px; }
-        
-        /* PINALAKING FONT AT MAS MAKAPAL NA FONT-WEIGHT */
         .loc-block p { font-size: 0.9rem; font-weight: 500; color: var(--text-main); margin: 0; line-height: 1.55; }
 
         /* ===== ABOUT ===== */
@@ -179,9 +157,7 @@
         .stat-box:hover { transform: translateY(-4px); border-color: var(--accent-gold); box-shadow: 0 8px 25px var(--shadow-warm); }
         .stat-number { font-family: var(--font-display); color: var(--accent-brown); font-size: 2.5rem; font-weight: 700; line-height: 1; }
         .stat-label { font-family: var(--font-body); font-size: 0.65rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); margin-top: 6px; }
-        
         .highlight-list { list-style: none; padding: 0; margin: 26px 0; }
-        /* PINALAKING FONT AT MAS MAKAPAL NA FONT-WEIGHT */
         .highlight-list li { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(184,132,42,0.1); font-size: 0.95rem; font-weight: 500; color: var(--text-muted); line-height: 1.5; }
         .highlight-list li:last-child { border-bottom: none; }
         .highlight-list li i { color: var(--accent-gold); margin-top: 5px; font-size: 0.72rem; flex-shrink: 0; }
@@ -189,12 +165,23 @@
         /* ===== CHATBOT ===== */
         .chat-btn { position: fixed; bottom: 32px; right: 32px; background-color: var(--accent-brown); color: #fff; border: none; border-radius: 50%; width: 56px; height: 56px; font-size: 20px; box-shadow: 0 4px 20px rgba(124,92,46,0.35); cursor: pointer; z-index: 1000; transition: all 0.3s; }
         .chat-btn:hover { transform: scale(1.1) translateY(-2px); background-color: var(--accent-dark); }
-        .chat-box { position: fixed; bottom: 102px; right: 32px; width: 335px; height: 470px; background: #fff; border-radius: 6px; box-shadow: 0 20px 60px rgba(0,0,0,0.12); display: none; flex-direction: column; z-index: 1001; overflow: hidden; border: 1px solid var(--border-soft); }
+        .chat-box { position: fixed; bottom: 102px; right: 32px; width: 350px; height: 500px; background: #fff; border-radius: 6px; box-shadow: 0 20px 60px rgba(0,0,0,0.12); display: none; flex-direction: column; z-index: 1001; overflow: hidden; border: 1px solid var(--border-soft); }
         .chat-header { background: var(--accent-brown); color: #fff; padding: 16px 20px; font-family: var(--font-body); font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; font-size: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+        .chat-header-info { display: flex; flex-direction: column; gap: 2px; }
+        .chat-header-name { font-weight: 700; font-size: 0.8rem; letter-spacing: 1.5px; }
+        .chat-header-status { font-size: 0.65rem; opacity: 0.8; letter-spacing: 1px; font-weight: 400; }
         .chat-body { flex: 1; padding: 18px; overflow-y: auto; background: var(--bg-secondary); }
-        .message { margin-bottom: 10px; padding: 11px 15px; border-radius: 4px; font-size: 0.86rem; font-weight: 500; max-width: 84%; font-family: var(--font-body); line-height: 1.5; }
+        .message { margin-bottom: 10px; padding: 11px 15px; border-radius: 4px; font-size: 0.86rem; font-weight: 500; max-width: 86%; font-family: var(--font-body); line-height: 1.55; }
         .bot-msg { background: #fff; color: var(--text-main); border-bottom-left-radius: 0; border: 1px solid rgba(184,132,42,0.12); box-shadow: 0 1px 4px var(--shadow-warm); }
         .user-msg { background: var(--accent-brown); color: #fff; margin-left: auto; border-bottom-right-radius: 0; }
+        .chat-suggestions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .chat-suggestion-btn { background: var(--bg-secondary); border: 1px solid rgba(184,132,42,0.3); color: var(--accent-brown); font-size: 0.72rem; font-weight: 600; padding: 5px 10px; border-radius: 20px; cursor: pointer; font-family: var(--font-body); transition: all 0.2s; white-space: nowrap; }
+        .chat-suggestion-btn:hover { background: var(--accent-brown); color: #fff; }
+        .typing-indicator { display: flex; align-items: center; gap: 4px; padding: 11px 15px; }
+        .typing-indicator span { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-gold); animation: typing 1.2s infinite; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
         .chat-footer { padding: 12px; border-top: 1px solid rgba(184,132,42,0.12); display: flex; background: #fff; gap: 8px; }
         .chat-footer input { flex: 1; padding: 10px 13px; border: 1px solid rgba(184,132,42,0.2); border-radius: 2px; outline: none; background: var(--bg-secondary); color: var(--text-main); font-size: 0.86rem; font-weight: 500; font-family: var(--font-body); }
         .chat-footer input::placeholder { color: var(--text-light); }
@@ -218,7 +205,7 @@
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 991px) { .side-info-panel, .location-details { margin-top: 28px; } .about-img-frame::before { display: none; } }
-        @media (max-width: 768px) { .slide-title { font-size: 2.6rem; } .thumbnail-container { width: 100%; right: 0; bottom: 16px; padding-left: 20px; max-width: 100%; } .slider-content { padding-left: 22px; padding-right: 22px; } .slide-desc { font-size: 0.9rem; max-width: 100%; } .info-card { padding: 26px 20px; } .fact-item { border-right: none; border-bottom: 1px solid var(--border-soft); padding: 20px 0; } .fact-item:last-child { border-bottom: none; } }
+        @media (max-width: 768px) { .slide-title { font-size: 2.6rem; } .thumbnail-container { width: 100%; right: 0; bottom: 16px; padding-left: 20px; max-width: 100%; } .slider-content { padding-left: 22px; padding-right: 22px; } .slide-desc { font-size: 0.9rem; max-width: 100%; } .info-card { padding: 26px 20px; } .fact-item { border-right: none; border-bottom: 1px solid var(--border-soft); padding: 20px 0; } .fact-item:last-child { border-bottom: none; } .chat-box { width: calc(100vw - 40px); right: 20px; } }
     </style>
 </head>
 <body>
@@ -267,14 +254,14 @@
 
     <div class="announcement-ribbon">
         <div class="ribbon-track">
-            <span>Open Daily 9AM – 6PM</span><span class="dot">◆</span>
+            <span>Open Mon–Sat 9AM – 6PM</span><span class="dot">◆</span>
             <span>Free Admission for Children Under 5</span><span class="dot">◆</span>
             <span>Advance Booking Required</span><span class="dot">◆</span>
             <span>Photography in Designated Zones</span><span class="dot">◆</span>
             <span>Wheelchair Accessible</span><span class="dot">◆</span>
             <span>Max 10 Visitors Per Slot</span><span class="dot">◆</span>
             <span>Pedro S. Tolentino Museum — Barangay Ilijan, Batangas City</span><span class="dot">◆</span>
-            <span>Open Daily 9AM – 6PM</span><span class="dot">◆</span>
+            <span>Open Mon–Sat 9AM – 6PM</span><span class="dot">◆</span>
             <span>Free Admission for Children Under 5</span><span class="dot">◆</span>
             <span>Advance Booking Required</span><span class="dot">◆</span>
             <span>Photography in Designated Zones</span><span class="dot">◆</span>
@@ -419,7 +406,7 @@
                         </div>
                         <div class="loc-block">
                             <div class="loc-icon"><i class="fas fa-phone"></i></div>
-                            <div><h6>Inquiries</h6><p>Book online or visit us during operating hours for in-person assistance.</p></div>
+                            <div><h6>Inquiries</h6><p>(043) 123-4567 &nbsp;|&nbsp; info@tolentinomuseum.ph</p></div>
                         </div>
                     </div>
                 </div>
@@ -460,22 +447,38 @@
 
     <?php include 'footer_modal.php'; ?>
 
-    <button class="chat-btn" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></button>
+    <!-- ===== CHATBOT ===== -->
+    <button class="chat-btn" onclick="toggleChat()" title="Chat with us">
+        <i class="fas fa-comment-dots"></i>
+    </button>
+
     <div class="chat-box" id="chatBox">
         <div class="chat-header">
-            <span><i class="fas fa-circle me-2" style="color: #90ee90; font-size: 0.55rem;"></i>AI PO AKO</span>
-            <span onclick="toggleChat()" style="cursor: pointer; font-size: 1.2rem; opacity: 0.7;">×</span>
+            <div class="chat-header-info">
+                <span class="chat-header-name"><i class="fas fa-circle me-2" style="color: #90ee90; font-size: 0.5rem;"></i>VisitEase Assistant</span>
+                <span class="chat-header-status">Pedro S. Tolentino Museum · Online</span>
+            </div>
+            <span onclick="toggleChat()" style="cursor: pointer; font-size: 1.3rem; opacity: 0.7; line-height: 1;">×</span>
         </div>
         <div class="chat-body" id="chatBody">
-            <div class="message bot-msg">Welcome to VisitEase! How can I assist you today?</div>
+            <div class="message bot-msg">
+                Mabuhay! 👋 Welcome to <strong>VisitEase</strong> — your guide to the <strong>Pedro S. Tolentino Museum</strong>. How can I help you today?
+                <div class="chat-suggestions">
+                    <span class="chat-suggestion-btn" onclick="quickAsk('How do I book a visit?')">📅 Book a Visit</span>
+                    <span class="chat-suggestion-btn" onclick="quickAsk('What are your opening hours?')">🕘 Hours</span>
+                    <span class="chat-suggestion-btn" onclick="quickAsk('Where is the museum located?')">📍 Location</span>
+                    <span class="chat-suggestion-btn" onclick="quickAsk('Who is Pedro S. Tolentino?')">🏛️ About Mayor</span>
+                </div>
+            </div>
         </div>
         <div class="chat-footer">
-            <input type="text" id="userInput" placeholder="Ask us anything..." onkeypress="handleEnter(event)">
+            <input type="text" id="userInput" placeholder="Type your question here..." onkeypress="handleEnter(event)">
             <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
     <script>
+        // ===== SLIDER =====
         const artifacts = [
             { id: 0, title: "Pedro S. Tolentino Museum", location: "Main Gallery Hub", desc: "Juan Luna's magnum opus. A harrowing glimpse into the bloodied floors of the Roman Colosseum, symbolizing the plight of the Filipino people under colonial rule.", img: "pedro landing.jpg" },
             { id: 1, title: "Achievements and Certificate", location: "Archive Section", desc: "Recognizing his vital contributions to preserving local heritage. This collection features important manuscripts, historical records, and academic accolades compiled for future generations.", img: "494358990_1047988036664015_4979249687492318735_n.jpg" },
@@ -532,18 +535,59 @@
             document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
         };
 
-        function toggleChat() { const cb = document.getElementById("chatBox"); cb.style.display = (cb.style.display === "none" || cb.style.display === "") ? "flex" : "none"; }
-        function handleEnter(e) { if (e.key === 'Enter') sendMessage(); }
-        function sendMessage() {
-            const input = document.getElementById("userInput"), msg = input.value.trim(), chatBody = document.getElementById("chatBody");
-            if (!msg) return;
-            const userDiv = document.createElement("div"); userDiv.className = "message user-msg"; userDiv.textContent = msg;
-            chatBody.appendChild(userDiv); input.value = ""; chatBody.scrollTop = chatBody.scrollHeight;
-            setTimeout(() => {
-                const botDiv = document.createElement("div"); botDiv.className = "message bot-msg"; botDiv.innerHTML = getBotResponse(msg);
-                chatBody.appendChild(botDiv); chatBody.scrollTop = chatBody.scrollHeight;
-            }, 600);
+        // ===== CHATBOT =====
+        function toggleChat() {
+            const cb = document.getElementById("chatBox");
+            cb.style.display = (cb.style.display === "none" || cb.style.display === "") ? "flex" : "none";
         }
+
+        function handleEnter(e) { if (e.key === 'Enter') sendMessage(); }
+
+        function quickAsk(text) {
+            document.getElementById("userInput").value = text;
+            sendMessage();
+        }
+
+        function showTyping() {
+            const chatBody = document.getElementById("chatBody");
+            const typingDiv = document.createElement("div");
+            typingDiv.className = "message bot-msg typing-indicator";
+            typingDiv.id = "typingIndicator";
+            typingDiv.innerHTML = '<span></span><span></span><span></span>';
+            chatBody.appendChild(typingDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function removeTyping() {
+            const t = document.getElementById("typingIndicator");
+            if (t) t.remove();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById("userInput");
+            const msg = input.value.trim();
+            const chatBody = document.getElementById("chatBody");
+            if (!msg) return;
+
+            const userDiv = document.createElement("div");
+            userDiv.className = "message user-msg";
+            userDiv.textContent = msg;
+            chatBody.appendChild(userDiv);
+            input.value = "";
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            showTyping();
+
+            setTimeout(() => {
+                removeTyping();
+                const botDiv = document.createElement("div");
+                botDiv.className = "message bot-msg";
+                botDiv.innerHTML = getBotResponse(msg);
+                chatBody.appendChild(botDiv);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }, 800);
+        }
+
         function getBotResponse(input) {
             const i = input.toLowerCase();
             if (i.includes("hello") || i.includes("hi")) return "Hello! Welcome to VisitEase. How can I help you today?";
@@ -557,6 +601,7 @@
             return "I'm happy to help! You can ask about our hours, location, booking, parking, or admission.";
         }
     </script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

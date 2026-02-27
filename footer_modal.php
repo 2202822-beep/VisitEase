@@ -114,4 +114,4 @@
             <p class="mb-0">&copy; <?php echo date('Y'); ?> Pedro S. Tolentino Museum. All Rights Reserved.</p>
         </div>
     </div>
-</footer>
+</footer>   
